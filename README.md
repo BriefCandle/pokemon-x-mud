@@ -1,11 +1,11 @@
 # roguelike-mud
 
 # Overview
-An RPG is a game genre involving players collecting and managing in-game elements (characters, equipment, buffs, etc.). Players’ game goal is realized through battling, in which players properly "stack" the stats of their in-game elements so as to achieve an optimized battling outcome. A feedback loop is then established by rewarding in-game tokens (exp, crystal, and etc.) after battling or completing other in-game activities, which can then be used to upgrade in-game elements, i.e., improving their stats. Therefore, an RPG concerns with two main mechanisms: 1) categorization of in-game elements, and 2) interactions among in-game elements (battling, upgrading, and etc.)
+An RPG is a game genre involving players strategically collecting and managing in-game elements (characters, equipment, buffs, etc.). Players’ game goal is realized through "battling", in which players properly "stack" the stats of their in-game elements so as to achieve an optimized battling outcome. A feedback loop is then established by rewarding in-game tokens (exp, crystal, and etc.) after battling or completing other in-game activities, which can then be used to upgrade in-game elements, i.e., improving their stats. Therefore, an RPG concerns with two main mechanisms: 1) categorization of in-game elements, and 2) interactions among in-game elements (battling, upgrading, and etc.)
 
 With these two concerns in mind, I use MUD's ECS (entity-component-system) model to realize two design patterns, which I believe to be vital/generic to on-chain RPGs:
-1) Separation between instances and classes of RPG characters and ownable entities, thereby separating game builders and game players in a decentralization spirit
-2) Proper definition of rights and authorization, thereby allowing concepts to be built on each other in a hierachical and parallel order
+1) **Separation between instances and classes** of RPG characters and ownable entities, thereby separating game builders and game players in a decentralization spirit
+2) **Proper definition of rights and authorization**, thereby allowing gameplay concepts to be built on each other in a hierachical and parallel order
 
 
 # Class -> Instance 
