@@ -7,4 +7,5 @@ deployments
 abi/
 types/
 broadcast/
+lib/
 .env
