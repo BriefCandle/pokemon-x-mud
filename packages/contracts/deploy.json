@@ -1,4 +1,9 @@
 {
-  "components": ["CounterComponent"],
-  "systems": [{ "name": "IncrementSystem", "writeAccess": ["CounterComponent"] }]
+  "components": ["ClassHeroStatsComponent", "ClassHeroMetaComponent"],
+  "systems": [
+    { "name": "CreateHeroClassSystem", 
+    "writeAccess": ["ClassHeroStatsComponent", "ClassHeroMetaComponent"] },
+    { "name": "EditHeroClassSystem", 
+    "writeAccess": ["ClassHeroStatsComponent", "ClassHeroMetaComponent"] }
+  ]
 }

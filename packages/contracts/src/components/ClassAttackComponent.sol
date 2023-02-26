@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
-import { RPGStatsComponent01, RPGStats01 } from "./RPGStatsComponent01.sol";
+import { RPGStatsComponent, RPGStats } from "./RPGStatsComponent.sol";
 
-uint256 constant ID = uint256(keccak256("component.Class.Attack"));
+uint256 constant ID = uint256(keccak256("component.ClassAttack"));
 
-contract ClassAttackComponent is RPGStatsComponent01 {
-  constructor(address world) RPGStatsComponent01(world, ID) {}
+contract ClassAttackComponent is RPGStatsComponent {
+  constructor(address world) RPGStatsComponent(world, ID) {}
 
 }
