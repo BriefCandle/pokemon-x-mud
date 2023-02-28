@@ -7,6 +7,7 @@ import { setup } from "./setup";
 import { MUDProvider } from "./mud/MUDContext";
 import { ComponentBrowser } from "./ComponentBrowser";
 
+
 const rootElement = document.getElementById("react-root");
 if (!rootElement) throw new Error("React root not found");
 const root = ReactDOM.createRoot(rootElement);
@@ -17,7 +18,7 @@ setup().then((result) => {
     <MUDProvider {...result}>
       <App />
       <ToastContainer position="bottom-right" draggable={false} theme="dark" />
-      {import.meta.env.DEV ? <ComponentBrowser /> : null}
+      {import.meta.env.DEV ? <ComponentBrowser /> : null }
     </MUDProvider>
   );
 });

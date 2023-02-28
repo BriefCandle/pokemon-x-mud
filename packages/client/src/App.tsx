@@ -1,7 +1,6 @@
 import { SyncState } from "@latticexyz/network";
 import { useComponentValue } from "@latticexyz/react";
-import { CreateHeroClass } from "./CreateHeroClass";
-import { HeroClass } from "./HeroClass";
+import { GameBoard } from "./GameBoard";
 import { useMUD } from "./mud/MUDContext";
 
 export const App = () => {
@@ -26,8 +25,7 @@ export const App = () => {
           {loadingState.msg} ({Math.floor(loadingState.percentage)}%)
         </div>
       ) : (
-        <HeroClass />
-        // <CreateHeroClass />
+        <GameBoard />
       )}
     </div>
   );

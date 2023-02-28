@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 import { Component } from "solecs/Component.sol";
-import { RPGStats } from "./RPGStatsComponent.sol";
 import { LibTypes } from "solecs/LibTypes.sol";
 
 struct RPGMeta {

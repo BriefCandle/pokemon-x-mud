@@ -1,4 +1,5 @@
 import { defineComponent, Type } from "@latticexyz/recs";
+import { defineNumberComponent, defineStringComponent } from "@latticexyz/std-client";
 // import {
 //   defineBoolComponent,
 //   defineCoordComponent,
@@ -6,42 +7,96 @@ import { defineComponent, Type } from "@latticexyz/recs";
 //   defineStringComponent,
 // } from "@latticexyz/std-client";
 import { world } from "./mud/world";
+// import { MoveTarget, StatusCondition, PokemonType, MoveCategory } from "./PokemonTypes";
 
-export const RPGStats = {
-  MAXHLTH: Type.Number, // max health
-  DMG: Type.Number,  // damage
+export const PokemonStats = {
+  HP: Type.Number, // max health
+  ATK: Type.Number,  // attack
+  DEF: Type.Number,  // defence
+  SPATK: Type.Number,  // special attack
+  SPDEF: Type.Number,  // special defence
   SPD: Type.Number,  // speed
-  PRT: Type.Number,  // protection
-  CRT: Type.Number,  // critical
-  ACR: Type.Number,  // accuracy
-  DDG: Type.Number,  // dodge
-  DRN: Type.Number,  // duration; 0 means permanent, 1 shall prompt deletion of stats
 }
 
-export const RPGMeta = {
-  name: Type.String,
-  description: Type.String,
-  url: Type.String,
-  others: Type.String
+export const MoveEffect = {
+  HP: Type.Number,  // health points
+  ATK: Type.Number,  // attack; A
+  DEF: Type.Number, // defence; B
+  SPATK: Type.Number, // special attack; C
+  SPDEF: Type.Number, // special defence; D
+  SPD: Type.Number, // speed; S
+  CRT: Type.Number, // critical rate
+  ACC: Type.Number, // accuracy
+  EVA: Type.Number, // evasive
+  chance: Type.Number, 
+  duration: Type.Number, // duration is not for sc; 0 means across battle
+  target: Type.Number,// MoveTarget,
+  sc: Type.Number //StatusCondition
+} as const;
+
+export const MoveInfo = {
+  TYP: Type.Number, //PokemonType, // move type
+  CTG: Type.Number, //MoveCategory, // move category
+  PP: Type.Number,
+  PWR: Type.Number, // power
+  ACR: Type.Number // accuracy
 }
+
+export const MoveLevels = {value: Type.NumberArray};
 
 export const components = {
-  ClassHeroStats: defineComponent(
-    world,
-    RPGStats, 
-    {
-      id: "ClassHeroStats",
-      metadata: {contractId: "component.ClassHeroStats"},
+  // // move class components:
+  MoveEffect: defineComponent(world,
+    MoveEffect,
+    {id: "MoveEffect", metadata: {contractId: "component.MoveEffect"}
     }
   ),
-  ClassHeroMeta: defineComponent(
-    world,
-    RPGMeta, 
-    {
-      id: "ClassHeroMeta",
-      metadata: {contractId: "component.ClassHeroMeta"},
+  MoveInfo: defineComponent(world,
+    MoveInfo,
+    {id: "MoveInfo", metadata: {contractId: "component.MoveInfo"}}
+  ),
+  MoveName: defineStringComponent(world, {
+    metadata: {contractId: "component.MoveName"}
+  }),
+  MoveLevelPokemon: defineComponent(world,
+    MoveLevels,
+    {id: "MoveLevelPokemon", metadata: {contractId: "component.MoveLevelPokemon"}
+    }  
+  ),
+  // pokemon class components: 
+  BaseStats: defineComponent(world,
+    PokemonStats, 
+    {id: "BaseStats", metadata: {contractId: "component.BaseStats"}}
+  ),
+  EffortValue: defineComponent(world,
+    PokemonStats, 
+    {id: "EffortValue", metadata: {contractId: "component.EffortValue"},}
+  ),
+  CatchRate: defineNumberComponent(world, {
+    metadata: {
+      contractId: "component.CatchRate"
     }
-  )
+  }),
+  LevelRate: defineNumberComponent(world, {
+    metadata: {
+      contractId: "component.LevelRate"
+    }
+  }),
+  PokemonIndex: defineNumberComponent(world, {
+    metadata: {
+      contractId: "component.PokemonIndex"
+    }
+  }),
+  PokemonType1: defineNumberComponent(world, {
+    metadata: {
+      contractId: "component.PokemonType1"
+    }
+  }),
+  PokemonType2: defineNumberComponent(world, {
+    metadata: {
+      contractId: "component.PokemonType2"
+    }
+  })
 }
 
 export const clientComponents = {};

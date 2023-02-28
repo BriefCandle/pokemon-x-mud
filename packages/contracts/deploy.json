@@ -1,9 +1,37 @@
 {
-  "components": ["ClassHeroStatsComponent", "ClassHeroMetaComponent"],
+  "components": [
+    "BaseStatsComponent", 
+    "CatchRateComponent", 
+    "EffortValueComponent", 
+    "PokemonIndexComponent", 
+    "PokemonType1Component", 
+    "PokemonType2Component",
+    "LevelRateComponent",
+
+    "MoveNameComponent",
+    "MoveInfoComponent",
+    "MoveEffectComponent",
+
+    "MoveLevelPokemonComponent"
+  ],
   "systems": [
-    { "name": "CreateHeroClassSystem", 
-    "writeAccess": ["ClassHeroStatsComponent", "ClassHeroMetaComponent"] },
-    { "name": "EditHeroClassSystem", 
-    "writeAccess": ["ClassHeroStatsComponent", "ClassHeroMetaComponent"] }
+    { "name": "CreatePokemonClassSystem", 
+      "writeAccess": [
+      "BaseStatsComponent", 
+      "CatchRateComponent", 
+      "EffortValueComponent", 
+      "PokemonIndexComponent", 
+      "PokemonType1Component", 
+      "PokemonType2Component",
+      "LevelRateComponent"
+    ]},
+    { "name": "CreateMoveClassSystem", 
+    "writeAccess": [
+      "MoveNameComponent",
+      "MoveInfoComponent",
+      "MoveEffectComponent"
+    ]},
+    { "name": "ConnectPokemonMovesSystem",
+    "writeAccess": ["MoveLevelPokemonComponent"]}
   ]
 }
