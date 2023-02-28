@@ -7,8 +7,7 @@ import { getComponentEntities } from "@latticexyz/recs";
 
 export const PokemonClass = (props:any) => {
   const {
-    components: { BaseStats, EffortValue, CatchRate, 
-      LevelRate, PokemonIndex, PokemonType1, PokemonType2 
+    components: { BaseStats, EffortValue, PokemonClassInfo, PokemonIndex
     },
     world
   } = useMUD();
@@ -18,11 +17,13 @@ export const PokemonClass = (props:any) => {
 
   const bs = useComponentValue(BaseStats, index);
   const ev = useComponentValue(EffortValue, index);
-  const cr = useComponentValue(CatchRate, index);
-  const lr = useComponentValue(LevelRate, index);
-  const i = useComponentValue(PokemonIndex, index);
-  const type1 = useComponentValue(PokemonType1, index);
-  const type2 = useComponentValue(PokemonType2, index);
+  const info = useComponentValue(PokemonClassInfo,index);
+  const pokemonIndex = useComponentValue(PokemonIndex, index);
+  // const cr = useComponentValue(CatchRate, index);
+  // const lr = useComponentValue(LevelRate, index);
+  // const i = useComponentValue(PokemonIndex, index);
+  // const type1 = useComponentValue(PokemonType1, index);
+  // const type2 = useComponentValue(PokemonType2, index);
 
   const displayStruct = (struct: any) => {
     const entries = Object.entries(struct);
@@ -39,15 +40,12 @@ export const PokemonClass = (props:any) => {
 
   return (
     <div>
-      <div>Pokemon Index: {i?.value}</div>
+      <div>Pokemon Index: {pokemonIndex?.value}</div>
       <div>World Index: {index.valueOf()}</div>
       <div>EntityID: {entityID.valueOf()}</div>
       <div>Base Stats: {displayStruct(bs)}</div>
       <div>Effort Value: {displayStruct(ev)}</div>
-      <div>Catch Rate: {cr?.value}</div>
-      <div>Level Rate: {lr?.value}</div>
-      <div>Type 1: {type1?.value}</div>
-      <div>Type 2: {type2?.value}</div>
+      <div>Class Info: {displayStruct(info)}</div>
     </div>
   )
 

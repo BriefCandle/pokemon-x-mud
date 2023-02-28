@@ -17,7 +17,7 @@ import { MoveEffect } from "../src/components/MoveEffectComponent.sol";
 contract CreateMoveClassScript is Script {
 
   address world = 0x5FbDB2315678afecb367f032d93F642f64180aa3;
-  address CreateMoveClassSystem = 0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1;
+  address CreateMoveClassSystem = 0x68B1D87F95878fE05B998F19b66F4baba5De1aed;
   
   string[4] nameArray;
   MoveInfo[4] infoArray;

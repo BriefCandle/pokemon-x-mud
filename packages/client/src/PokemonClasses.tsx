@@ -9,10 +9,7 @@ import { PokemonClass } from "./PokemonClass";
 
 export const PokemonClasses = () => {
   const {
-    components: { BaseStats, EffortValue, CatchRate, 
-      LevelRate, PokemonIndex, PokemonType1, PokemonType2,
-      MoveLevelPokemon 
-    },
+    components: { BaseStats},
     world,
     systems,
     playerEntity,

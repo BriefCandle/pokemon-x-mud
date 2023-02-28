@@ -4,6 +4,7 @@ import "../lib/forge-std/src/Script.sol";
 import { PokemonStats } from "../src/components/PokemonStatsComponent.sol";
 import { PokemonType } from "../src/PokemonType.sol";
 import { LevelRate } from "../src/LevelRate.sol";
+import { PokemonClassInfo } from "../src/components/PokemonClassInfoComponent.sol";
 
 // source .env
 // forge script script/CreatePokemonClass.s.sol:CreatePokemonClassScript --rpc-url http://localhost:8545 --broadcast
@@ -11,15 +12,18 @@ import { LevelRate } from "../src/LevelRate.sol";
 contract CreatePokemonClassScript is Script {
 
   address world = 0x5FbDB2315678afecb367f032d93F642f64180aa3;
-  address CreatePokemonClassSystem = 0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82;
+  address CreatePokemonClassSystem = 0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0;
   
   PokemonStats[3] bsArray;
   PokemonStats[3] evArray;
-  uint32[3] crArray;
+  PokemonClassInfo[3] pciArray;
+
+  // uint32[3] crArray;
   uint32[3] iArray;
-  PokemonType[3] type1Array;
-  PokemonType[3] type2Array;
-  LevelRate[3] lrArray;
+  // PokemonType[3] type1Array;
+  // PokemonType[3] type2Array;
+  // LevelRate[3] lrArray;
+
 
   function run() public {
     // uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -33,16 +37,18 @@ contract CreatePokemonClassScript is Script {
     evArray[1] = PokemonStats(0,0,0,1,1,0);
     evArray[2] = PokemonStats(0,0,0,2,1,0);
 
-    crArray = [45, 45, 45];
+    pciArray[0] = PokemonClassInfo(45,PokemonType.Grass,PokemonType.Poison,LevelRate.MediumSlow);
+    pciArray[1] = PokemonClassInfo(45,PokemonType.Grass,PokemonType.Poison,LevelRate.MediumSlow);
+    pciArray[2] = PokemonClassInfo(45,PokemonType.Grass,PokemonType.Poison,LevelRate.MediumSlow);
+    // crArray = [45, 45, 45];
     iArray = [1,2,3];
-    type1Array = [PokemonType.Grass, PokemonType.Grass, PokemonType.Grass];
-    type2Array = [PokemonType.Poison, PokemonType.Poison, PokemonType.Poison];
-    lrArray = [LevelRate.MediumSlow, LevelRate.MediumSlow, LevelRate.MediumSlow];
+    // type1Array = [PokemonType.Grass, PokemonType.Grass, PokemonType.Grass];
+    // type2Array = [PokemonType.Poison, PokemonType.Poison, PokemonType.Poison];
+    // lrArray = [LevelRate.MediumSlow, LevelRate.MediumSlow, LevelRate.MediumSlow];
 
     for(uint i=0; i<bsArray.length; i++) {
       ICreatePokemonClassSystem(CreatePokemonClassSystem).executeTyped(
-        bsArray[i], evArray[i], crArray[i], iArray[i], 
-        type1Array[i], type2Array[i], lrArray[i]);
+        bsArray[i], evArray[i], pciArray[i], iArray[i]);
     }
 
     vm.stopBroadcast();
@@ -53,8 +59,7 @@ contract CreatePokemonClassScript is Script {
 }
 
 interface ICreatePokemonClassSystem {
-  function executeTyped(PokemonStats memory bs, PokemonStats memory ev, uint32 cr, uint32 i, 
-  PokemonType type1, PokemonType type2, LevelRate lr) external returns (bytes memory);
+  function executeTyped(PokemonStats memory bs, PokemonStats memory ev, PokemonClassInfo memory info, uint32 index) external returns (bytes memory);
 }
 
 interface IWorld {

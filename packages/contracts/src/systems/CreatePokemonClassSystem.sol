@@ -6,13 +6,14 @@ import { PokemonType } from "../PokemonType.sol";
 import { LevelRate } from "../LevelRate.sol";
 import { PokemonStats } from "../components/PokemonStatsComponent.sol";
 
+import { PokemonClassInfoComponent, ID as PokemonClassInfoComponentID, PokemonClassInfo } from "../components/PokemonClassInfoComponent.sol";
 import { BaseStatsComponent, ID as BaseStatsComponentID } from "../components/BaseStatsComponent.sol";
 import { EffortValueComponent, ID as EffortValueComponentID } from "../components/EffortValueComponent.sol";
-import { CatchRateComponent, ID as CatchRateComponentID } from "../components/CatchRateComponent.sol";
+// import { CatchRateComponent, ID as CatchRateComponentID } from "../components/CatchRateComponent.sol";
 import { PokemonIndexComponent, ID as PokemonIndexComponentID } from "../components/PokemonIndexComponent.sol";
-import { PokemonType1Component, ID as PokemonType1ComponentID } from "../components/PokemonType1Component.sol";
-import { PokemonType2Component, ID as PokemonType2ComponentID } from "../components/PokemonType2Component.sol";
-import { LevelRateComponent, ID as LevelRateComponentID } from "../components/LevelRateComponent.sol";
+// import { PokemonType1Component, ID as PokemonType1ComponentID } from "../components/PokemonType1Component.sol";
+// import { PokemonType2Component, ID as PokemonType2ComponentID } from "../components/PokemonType2Component.sol";
+// import { LevelRateComponent, ID as LevelRateComponentID } from "../components/LevelRateComponent.sol";
 
 uint256 constant ID = uint256(keccak256("system.CreatePokemonClass"));
 
@@ -21,14 +22,16 @@ contract CreatePokemonClassSystem is System {
   constructor(IWorld _world, address _components) System(_world, _components) {}
 
   function execute(bytes memory args) public returns (bytes memory) {
-    (PokemonStats memory bs, PokemonStats memory ev, uint32 cr, uint32 i, 
-    PokemonType type1, PokemonType type2, LevelRate lr) = abi.decode(
-      args, (PokemonStats, PokemonStats, uint32, uint32, PokemonType, PokemonType, LevelRate));
-    return executeTyped(bs, ev, cr, i, type1, type2, lr);
+    (PokemonStats memory bs, PokemonStats memory ev, PokemonClassInfo memory info, uint32 index) = abi.decode(
+      args, (PokemonStats, PokemonStats, PokemonClassInfo, uint32));
+    return executeTyped(bs, ev, info, index);
+    // (PokemonStats memory bs, PokemonStats memory ev, uint32 cr, uint32 i, 
+    // PokemonType type1, PokemonType type2, LevelRate lr) = abi.decode(
+    //   args, (PokemonStats, PokemonStats, uint32, uint32, PokemonType, PokemonType, LevelRate));
+    // return executeTyped(bs, ev, cr, i, type1, type2, lr);
   }
 
-  function executeTyped(PokemonStats memory bs, PokemonStats memory ev, uint32 cr, uint32 i, 
-  PokemonType type1, PokemonType type2, LevelRate lr) public returns (bytes memory) {
+  function executeTyped(PokemonStats memory bs, PokemonStats memory ev, PokemonClassInfo memory info, uint32 index) public returns (bytes memory) {
     // need to write some authorization here
     uint256 entityID = world.getUniqueEntityId();
 
@@ -38,19 +41,21 @@ contract CreatePokemonClassSystem is System {
     EffortValueComponent evComp = EffortValueComponent(getAddressById(components, EffortValueComponentID));
     evComp.set(entityID, ev);
 
-    CatchRateComponent crComp = CatchRateComponent(getAddressById(components, CatchRateComponentID));
-    crComp.set(entityID, cr);
+    PokemonClassInfoComponent pciComp = PokemonClassInfoComponent(getAddressById(components, PokemonClassInfoComponentID));
+    pciComp.set(entityID, info);
+    // CatchRateComponent crComp = CatchRateComponent(getAddressById(components, CatchRateComponentID));
+    // crComp.set(entityID, cr);
 
     PokemonIndexComponent iComp = PokemonIndexComponent(getAddressById(components, PokemonIndexComponentID));
-    iComp.set(entityID, i);
+    iComp.set(entityID, index);
 
-    PokemonType1Component type1Comp = PokemonType1Component(getAddressById(components, PokemonType1ComponentID));
-    type1Comp.set(entityID, type1);
+    // PokemonType1Component type1Comp = PokemonType1Component(getAddressById(components, PokemonType1ComponentID));
+    // type1Comp.set(entityID, type1);
 
-    PokemonType2Component type2Comp = PokemonType2Component(getAddressById(components, PokemonType2ComponentID));
-    type2Comp.set(entityID, type2);
+    // PokemonType2Component type2Comp = PokemonType2Component(getAddressById(components, PokemonType2ComponentID));
+    // type2Comp.set(entityID, type2);
 
-    LevelRateComponent lrComp = LevelRateComponent(getAddressById(components, LevelRateComponentID));
-    lrComp.set(entityID, lr);
+    // LevelRateComponent lrComp = LevelRateComponent(getAddressById(components, LevelRateComponentID));
+    // lrComp.set(entityID, lr);
   }
 }

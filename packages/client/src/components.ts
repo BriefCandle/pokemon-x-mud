@@ -9,6 +9,18 @@ import { defineNumberComponent, defineStringComponent } from "@latticexyz/std-cl
 import { world } from "./mud/world";
 // import { MoveTarget, StatusCondition, PokemonType, MoveCategory } from "./PokemonTypes";
 
+export const PokemonInstance = {
+  classID: Type.Number, // refer to pokemon classID
+  move1: Type.Number,
+  move2: Type.Number,
+  move3: Type.Number,
+  move4: Type.Number,
+  heldItem: Type.Number, // refer to heldItem instance ID
+  exp: Type.Number,
+  currentHP: Type.Number,
+  sc: Type.Number //StatusCondition
+}
+
 export const PokemonStats = {
   HP: Type.Number, // max health
   ATK: Type.Number,  // attack
@@ -16,6 +28,13 @@ export const PokemonStats = {
   SPATK: Type.Number,  // special attack
   SPDEF: Type.Number,  // special defence
   SPD: Type.Number,  // speed
+}
+
+export const PokemonClassInfo = {
+  catchRate: Type.Number,
+  type1: Type.Number,
+  type2: Type.Number,
+  levelRate: Type.Number
 }
 
 export const MoveEffect = {
@@ -45,11 +64,18 @@ export const MoveInfo = {
 export const MoveLevels = {value: Type.NumberArray};
 
 export const components = {
-  // // move class components:
+  // Pokemon instance components:
+  PokemonInstance: defineComponent(world,
+    PokemonInstance,
+    {id: "PokemonInstance", metadata: {contractId: "component.PokemonInstance"}}
+  ),
+  PokemonNickname: defineStringComponent(world, {
+    metadata: {contractId: "component.PokemonNickname"}
+  }),
+  // move class components:
   MoveEffect: defineComponent(world,
     MoveEffect,
-    {id: "MoveEffect", metadata: {contractId: "component.MoveEffect"}
-    }
+    {id: "MoveEffect", metadata: {contractId: "component.MoveEffect"}}
   ),
   MoveInfo: defineComponent(world,
     MoveInfo,
@@ -72,31 +98,35 @@ export const components = {
     PokemonStats, 
     {id: "EffortValue", metadata: {contractId: "component.EffortValue"},}
   ),
-  CatchRate: defineNumberComponent(world, {
-    metadata: {
-      contractId: "component.CatchRate"
-    }
-  }),
-  LevelRate: defineNumberComponent(world, {
-    metadata: {
-      contractId: "component.LevelRate"
-    }
-  }),
+  PokemonClassInfo: defineComponent(world,
+    PokemonClassInfo, 
+    {id: "PokemonClassInfo", metadata: {contractId: "component.PokemonClassInfo"},}
+  ),
+  // CatchRate: defineNumberComponent(world, {
+  //   metadata: {
+  //     contractId: "component.CatchRate"
+  //   }
+  // }),
+  // LevelRate: defineNumberComponent(world, {
+  //   metadata: {
+  //     contractId: "component.LevelRate"
+  //   }
+  // }),
   PokemonIndex: defineNumberComponent(world, {
     metadata: {
       contractId: "component.PokemonIndex"
     }
-  }),
-  PokemonType1: defineNumberComponent(world, {
-    metadata: {
-      contractId: "component.PokemonType1"
-    }
-  }),
-  PokemonType2: defineNumberComponent(world, {
-    metadata: {
-      contractId: "component.PokemonType2"
-    }
   })
+  // PokemonType1: defineNumberComponent(world, {
+  //   metadata: {
+  //     contractId: "component.PokemonType1"
+  //   }
+  // }),
+  // PokemonType2: defineNumberComponent(world, {
+  //   metadata: {
+  //     contractId: "component.PokemonType2"
+  //   }
+  // })
 }
 
 export const clientComponents = {};

@@ -19,7 +19,7 @@ contract ConnectPokemonMovesSystem is System {
 
   function executeTyped(uint256 pokemonID, uint256[] memory moves) public returns (bytes memory) {
     // need to write some authorization here
-
+    // need to check if pokemon index exist
     require(moves.length <= 15, "Moves need to be 15 in length");
     MoveLevelPokemonComponent mlpComp = MoveLevelPokemonComponent(getAddressById(components, MoveLevelPokemonComponentID));
     mlpComp.set(pokemonID, moves);

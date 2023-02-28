@@ -1,29 +1,25 @@
 {
   "components": [
     "BaseStatsComponent", 
-    "CatchRateComponent", 
     "EffortValueComponent", 
-    "PokemonIndexComponent", 
-    "PokemonType1Component", 
-    "PokemonType2Component",
-    "LevelRateComponent",
+    "PokemonClassInfoComponent",
+    "PokemonIndexComponent",
 
     "MoveNameComponent",
     "MoveInfoComponent",
     "MoveEffectComponent",
+    "MoveLevelPokemonComponent",
 
-    "MoveLevelPokemonComponent"
+    "PokemonInstanceComponent",
+    "PokemonNicknameComponent"
   ],
   "systems": [
     { "name": "CreatePokemonClassSystem", 
       "writeAccess": [
       "BaseStatsComponent", 
-      "CatchRateComponent", 
-      "EffortValueComponent", 
-      "PokemonIndexComponent", 
-      "PokemonType1Component", 
-      "PokemonType2Component",
-      "LevelRateComponent"
+      "EffortValueComponent",
+      "PokemonClassInfoComponent",
+      "PokemonIndexComponent"
     ]},
     { "name": "CreateMoveClassSystem", 
     "writeAccess": [
@@ -32,6 +28,10 @@
       "MoveEffectComponent"
     ]},
     { "name": "ConnectPokemonMovesSystem",
-    "writeAccess": ["MoveLevelPokemonComponent"]}
+    "writeAccess": [
+      "MoveLevelPokemonComponent"]},
+    { "name": "NewPokemonInstanceSystem",
+    "writeAccess": [
+      "PokemonInstanceComponent"]}
   ]
 }
