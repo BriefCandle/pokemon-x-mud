@@ -6,7 +6,7 @@ import { StatusCondition } from "../StatusCondition.sol";
 
 // this is not exclusive of all pokemon instance data
 // also need to include nickname and IV
-// additional battle instance needs to be created during battle
+// also, additional battle instance needs to be created during battle
 struct PokemonInstance {
   uint256 classID;
   uint256 move1;

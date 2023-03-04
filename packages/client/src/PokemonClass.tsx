@@ -19,11 +19,6 @@ export const PokemonClass = (props:any) => {
   const ev = useComponentValue(EffortValue, index);
   const info = useComponentValue(PokemonClassInfo,index);
   const pokemonIndex = useComponentValue(PokemonIndex, index);
-  // const cr = useComponentValue(CatchRate, index);
-  // const lr = useComponentValue(LevelRate, index);
-  // const i = useComponentValue(PokemonIndex, index);
-  // const type1 = useComponentValue(PokemonType1, index);
-  // const type2 = useComponentValue(PokemonType2, index);
 
   const displayStruct = (struct: any) => {
     const entries = Object.entries(struct);

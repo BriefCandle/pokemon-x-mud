@@ -4,8 +4,10 @@ import { config } from "./mud/config";
 import { components, clientComponents } from "./components";
 import { world } from "./mud/world";
 import { SystemAbis } from "contracts/types/SystemAbis.mjs";
-import { EntityID, overridableComponent } from "@latticexyz/recs";
+import { EntityID, getComponentValue,  } from "@latticexyz/recs";
 import { GodID as singletonEntityId } from "@latticexyz/network";
+import { uuid } from "@latticexyz/utils";
+
 
 export type SetupResult = Awaited<ReturnType<typeof setup>>;
 
@@ -38,6 +40,29 @@ export const setup = async () => {
     // Player: overridableComponent(components.Player),
   };
 
+  const crawlTo = async (x: number, y: number) => {
+    const positionId = uuid();
+    components.Position.addOverride(positionId, {
+      entity: playerEntity,
+      value: { x, y },
+    });
+    try {
+      const tx = await result.systems["system.Crawl"].executeTyped({ x, y });
+      await tx.wait();
+    } finally {
+      components.Position.removeOverride(positionId);
+    }
+  };
+
+  const crawlBy = async (deltaX: number, deltaY: number) => {
+    const playerPosition = getComponentValue(components.Position, playerEntity);
+    if (!playerPosition) {
+      console.warn("cannot moveBy without a player position, not yet spawned?");
+      return;
+    }
+    await crawlTo(playerPosition.x + deltaX, playerPosition.y + deltaY);
+  };
+
   return {
     ...result,
     world,
@@ -49,6 +74,10 @@ export const setup = async () => {
       ...result.components,
       ...componentsWithOverrides,
       ...clientComponents,
+    },
+    api: {
+      crawlTo,
+      crawlBy,
     },
   };
 };

@@ -11,7 +11,12 @@
     "MoveLevelPokemonComponent",
 
     "PokemonInstanceComponent",
-    "PokemonNicknameComponent"
+    "PokemonNicknameComponent",
+
+    "PositionComponent",
+    "ObstructionComponent",
+    "EncounterTriggerComponent",
+    "ParcelComponent"
   ],
   "systems": [
     { "name": "CreatePokemonClassSystem", 
@@ -32,6 +37,16 @@
       "MoveLevelPokemonComponent"]},
     { "name": "NewPokemonInstanceSystem",
     "writeAccess": [
-      "PokemonInstanceComponent"]}
+      "PokemonInstanceComponent"]},
+    { "name": "CrawlSystem",
+    "writeAccess": [
+      "PositionComponent"]},
+    { "name": "CreateParcelSystem",
+    "writeAccess": [
+      "PositionComponent",
+      "ParcelComponent",
+      "ObstructionComponent",
+      "EncounterTriggerComponent"
+    ]}
   ]
 }
