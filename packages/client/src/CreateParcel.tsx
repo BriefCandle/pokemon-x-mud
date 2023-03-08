@@ -30,10 +30,10 @@ export const CreateParcel = () => {
   } = useMUD();
 
   const parcels = useParcels();
+
   const max_row = 6;
   const max_col = 6;
 
-  // newParcels = parcelNo: {x_parcel, y_parcel, parcel_info: {terrainNo: {x, y, value, type}}}
   type Parcel = {
     x_parcel: number;
     y_parcel: number;
@@ -89,7 +89,7 @@ export const CreateParcel = () => {
     return (
       <div key={`${x_parcel},${y_parcel}`} style={{position: 'relative', left: x_parcel*parcelWidth*terrainWidth, top: y_parcel*parcelHeight*terrainHeight}}>
         {parcel_info.map((terrain, index) => (
-          <RenderTerrain terrainValue={terrain} t_index={index} parcel_no={parcelNo} />
+          <RenderTerrain key={index} terrainValue={terrain} t_index={index} parcel_no={parcelNo} />
         ))}
       </div>
     )
@@ -117,15 +117,14 @@ export const CreateParcel = () => {
     const listener = (e: KeyboardEvent) => {
       if(e.key === 'n') setMap(0) // none
       if(e.key === 'p') setMap(1) // path
-      if(e.key === 'g') setMap(2) // grass
-      if(e.key === 'v') setMap(3) // gravel
+      if(e.key === 'v') setMap(2) // gravel
+      if(e.key === 'g') setMap(3) // grass
       if(e.key === 'f') setMap(4) // flower
       if(e.key === 'l') setMap(5) // grasstall
-      if(e.key === 'r') setMap(6) // grassrustle
-      if(e.key === 's') setMap(7) // treeshort
-      if(e.key === 't') setMap(8) // treetall
-      if(e.key === 'w') setMap(9) // water
-      if(e.key === 'b') setMap(10) // bolder
+      if(e.key === 's') setMap(6) // treeshort
+      if(e.key === 't') setMap(7) // treetall
+      if(e.key === 'w') setMap(8) // water
+      if(e.key === 'b') setMap(9) // bolder
     }
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);

@@ -4,7 +4,6 @@ import { useMUD } from "./mud/MUDContext";
 import { useEffect } from "react";
 import { ethers } from "ethers";
 import { terrainTypes, TerrainType, parcelHeight, parcelWidth} from "./enum/terrainTypes";
-import { validators } from "tailwind-merge";
 
 
 export const useParcels = () => {
@@ -34,6 +33,7 @@ export const useParcels = () => {
       value,
       type: value in TerrainType ? terrainTypes[value as TerrainType]: null,
     }))
+    
     return {
       x_parcel: x,
       y_parcel: y,

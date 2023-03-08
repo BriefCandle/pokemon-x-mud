@@ -16,7 +16,14 @@
     "PositionComponent",
     "ObstructionComponent",
     "EncounterTriggerComponent",
-    "ParcelComponent"
+    "ParcelComponent",
+
+    "PlayerComponent",
+
+    "EncounterComponent",
+
+    "TeamComponent",
+    "OwnedByComponent"
   ],
   "systems": [
     { "name": "CreatePokemonClassSystem", 
@@ -27,26 +34,45 @@
       "PokemonIndexComponent"
     ]},
     { "name": "CreateMoveClassSystem", 
-    "writeAccess": [
+      "writeAccess": [
       "MoveNameComponent",
       "MoveInfoComponent",
       "MoveEffectComponent"
     ]},
     { "name": "ConnectPokemonMovesSystem",
-    "writeAccess": [
+      "writeAccess": [
       "MoveLevelPokemonComponent"]},
     { "name": "NewPokemonInstanceSystem",
-    "writeAccess": [
+      "writeAccess": [
       "PokemonInstanceComponent"]},
     { "name": "CrawlSystem",
+      "writeAccess": [
+      "PositionComponent",
+      "EncounterComponent"
+    ]},
+    { "name": "SpawnPokemonSystem",
     "writeAccess": [
-      "PositionComponent"]},
+      "PokemonInstanceComponent"
+    ]
+    },
     { "name": "CreateParcelSystem",
-    "writeAccess": [
+      "writeAccess": [
       "PositionComponent",
       "ParcelComponent",
       "ObstructionComponent",
       "EncounterTriggerComponent"
-    ]}
+    ]},
+    { "name": "SpawnSystem",
+      "writeAccess": [
+      "PlayerComponent",
+      "PositionComponent"
+    ]},
+    { "name": "ObtainFirstPokemonSystem",
+      "writeAccess": [
+        "OwnedByComponent",
+        "PokemonInstanceComponent",
+        "TeamComponent"
+      ]
+    }
   ]
 }

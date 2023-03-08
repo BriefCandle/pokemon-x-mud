@@ -1,18 +1,17 @@
 export enum TerrainType {
   None,
   Path ,
-  Grass,
   Gravel,
+  Grass,
   Flower,
   GrassTall,
-  GrassRustle,
   TreeShort,
   TreeTall,
   Water,
   Boulder,
 }
 
-type TerrainConfig = {
+export type TerrainConfig = {
   tile00: string;
   tile10: string;
   tile01: string;
@@ -55,12 +54,6 @@ export const terrainTypes: Record<TerrainType, TerrainConfig> = {
     tile10: "grass_tall",
     tile01: "grass_tall",
     tile11: "grass_tall"
-  },
-  [TerrainType.GrassRustle]: {
-    tile00: "grass_rustle00",
-    tile10: "grass_rustle10",
-    tile01: "grass_rustle00",
-    tile11: "grass_rustle10"
   },
   [TerrainType.TreeShort]: {
     tile00: "tree_short00",

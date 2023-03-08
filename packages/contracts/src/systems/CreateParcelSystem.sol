@@ -62,8 +62,7 @@ contract CreateParcelSystem is System {
             terrainType == TerrainType.TreeTall
         ) {
           obstruction.set(positionID);
-        } else if (terrainType == TerrainType.GrassRustle ||
-                   terrainType == TerrainType.GrassTall
+        } else if (terrainType == TerrainType.GrassTall
         ) {
           encounterTrigger.set(positionID);
         }

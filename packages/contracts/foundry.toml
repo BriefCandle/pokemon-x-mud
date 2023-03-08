@@ -7,3 +7,4 @@ verbosity = 1
 libs = ["../../node_modules", "../../../mud"]
 src = "src"
 out = "out"
+test = "src/test"

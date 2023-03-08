@@ -1,5 +1,5 @@
 import { defineComponent, Type } from "@latticexyz/recs";
-import { defineNumberComponent, defineStringComponent, defineCoordComponent } from "@latticexyz/std-client";
+import { defineNumberComponent, defineStringComponent, defineCoordComponent, defineBoolComponent } from "@latticexyz/std-client";
 // import {
 //   defineBoolComponent,
 //   defineCoordComponent,
@@ -73,6 +73,9 @@ export const MoveLevels = {value: Type.NumberArray};
 
 
 export const components = {
+  Encounter: defineNumberComponent(world, {
+    metadata: {contractId: "component.Encounter"}
+  }),
   // crawl, position components:
   Parcel: defineComponent(world,
     {
@@ -82,6 +85,9 @@ export const components = {
     },
     {id: "Parcel", metadata: {contractId: "component.Parcel"}}
   ),
+  Player: defineBoolComponent(world, {
+    metadata:{contractId: "component.Player"}
+  }),
   Position: overridableComponent(
     defineCoordComponent(world,{
       metadata:{contractId: "component.Position"}

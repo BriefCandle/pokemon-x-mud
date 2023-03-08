@@ -6,12 +6,12 @@ import { TerrainType } from "../../src/TerrainType.sol";
 
 
 // source .env
-// forge script script/parcel/CreateParcel01.s.sol:CreateParcel01Script --rpc-url http://localhost:8545 --broadcast
+// forge script script/parcel/CreateParcel10.s.sol:CreateParcel10Script --rpc-url http://localhost:8545 --broadcast
 
-contract CreateParcel01Script is Script {
+contract CreateParcel10Script is Script {
 
   address world = 0x5FbDB2315678afecb367f032d93F642f64180aa3;
-  address CreateParcelSystem = 0x851356ae760d987E095750cCeb3bC6014560891C;
+  address CreateParcelSystem = 0x8f86403A4DE0BB5791fa46B8e795C547942fE4Cf;
   int32 x_p = 1;
   int32 y_p = 0;
   
@@ -23,18 +23,17 @@ contract CreateParcel01Script is Script {
     TerrainType V = TerrainType.Gravel;
     TerrainType F = TerrainType.Flower;
     TerrainType L = TerrainType.GrassTall;
-    TerrainType R = TerrainType.GrassRustle;
     TerrainType S = TerrainType.TreeShort;
     TerrainType T = TerrainType.TreeTall;
     TerrainType W = TerrainType.Water;
     TerrainType B = TerrainType.Boulder;
 
     TerrainType[parcelHeight][parcelWidth] memory map = [
-      [P, P, P, W, W],
-      [P, R, R, W, W],
-      [P, R, R, P, P],
-      [P, P, P, P, P],
-      [S, S, S, S, S]
+      [S, S, S, S, S],
+      [L, L, G, W, W],
+      [L, L, G, G, G],
+      [L, L, G, G, G],
+      [G, G, G, G, G]
     ];
 
     bytes memory terrain = new bytes(parcelWidth * parcelHeight);

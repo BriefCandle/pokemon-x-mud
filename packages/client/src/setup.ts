@@ -41,6 +41,7 @@ export const setup = async () => {
   };
 
   const crawlTo = async (x: number, y: number) => {
+
     const positionId = uuid();
     components.Position.addOverride(positionId, {
       entity: playerEntity,
@@ -49,6 +50,7 @@ export const setup = async () => {
     try {
       const tx = await result.systems["system.Crawl"].executeTyped({ x, y });
       await tx.wait();
+
     } finally {
       components.Position.removeOverride(positionId);
     }

@@ -8,7 +8,6 @@ enum TerrainType {
   Grass,
   Flower,
   GrassTall,
-  GrassRustle,
   TreeShort,
   TreeTall,
   Water,

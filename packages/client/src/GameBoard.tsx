@@ -1,16 +1,20 @@
 import { PokemonClasses } from "./PokemonClasses";
 import { useEffect, useRef } from "react";
 import { useMUD } from "./mud/MUDContext";
-import { useComponentValue } from "@latticexyz/react";
+import { useComponentValue, useEntityQuery } from "@latticexyz/react";
 import { useKeyboardMovement } from "./useKeyboardMovement";
 import { useParcels } from "./useParcels";
 import { parcelHeight, parcelWidth, terrainWidth, terrainHeight } from "./enum/terrainTypes";
 import { images } from "./CreateParcel";
+import { useSpawn } from "./useSpawn";
+import { getComponentEntities, getComponentValueStrict, Has } from "@latticexyz/recs";
+import ethan from "./assets/player/ethan.png";
+
 
 export const GameBoard = () => {
 
   const {
-    components: { Position },
+    components: { Position, Player, Encounter, PokemonInstance },
     api: { crawlTo },
     systems,
     world,
@@ -18,70 +22,136 @@ export const GameBoard = () => {
   } = useMUD();
 
   // console.log(world)
-  const playerPosition = useComponentValue(Position, playerEntity);
 
+  const otherPlayers = useEntityQuery([Has(Player), Has(Position)])
+    .filter((entity) => entity != playerEntity)
+    .map((entity) => {
+      const position = getComponentValueStrict(Position, entity);
+      return {entity, position}
+    })
+  const playerPosition = useComponentValue(Position, playerEntity);
+  // console.log(playerPosition)
+  const encounter = useComponentValue(Encounter, playerEntity);
+  console.log(encounter)
+  const pokemonInstanceIndex = getComponentEntities(PokemonInstance)
+  // const pokemoInstances = useComponentValue(PokemonInstance)
+  console.log(pokemonInstanceIndex)
+
+  const { canSpawn, spawn } = useSpawn();
   useKeyboardMovement();
 
   // makes player always center of the map
-  // const mapRef = useRef(null);
-  // useEffect(() => {
-  //   const mapContainer = mapRef.current;
-  //   const { clientWidth, clientHeight } = mapContainer;
-  //   // calculate the position of the entity relative to the center of the map    
-  //   const xCenter = clientWidth / 2;
-  //   const yCenter = clientHeight / 2;
-  //   const xEntity = playerPosition?.x * element_width; // assuming each cell is 32px wide
-  //   const yEntity = playerPosition?.y * element_width; // assuming each cell is 32px high
-  //   const xTranslate = xCenter - xEntity;
-  //   const yTranslate = yCenter - yEntity;
-  //   // apply the transform to the map
-  //   mapContainer?.style.setProperty('transform', `translate(${xTranslate}px, ${yTranslate}px)`);
-  // }, [playerPosition])
+  const mapRef = useRef(null);
+  useEffect(() => {
+    const mapContainer = mapRef.current;
+    const { clientWidth, clientHeight } = mapContainer;
+    // calculate the position of the entity relative to the center of the map    
+    const xCenter = clientWidth / 2;
+    const yCenter = clientHeight / 2;
+    const xEntity = playerPosition?.x * terrainWidth; // assuming each cell is 32px wide
+    const yEntity = playerPosition?.y * terrainHeight; // assuming each cell is 32px high
+    const xTranslate = xCenter - xEntity;
+    const yTranslate = yCenter - yEntity;
+    // apply the transform to the map
+    mapContainer?.style.setProperty('transform', `translate(${xTranslate}px, ${yTranslate}px)`);
+  }, [playerPosition])
 
   const parcels = useParcels();
+  // console.log(parcels)
 
-  const xValues = parcels.map(parcel => parcel.x_parcel);
-  const yValues = parcels.map(parcel => parcel.y_parcel);
-  const maxX = Math.max(...xValues);
-  const maxY = Math.max(...yValues);
-  const minX = Math.min(...xValues);
-  const minY = Math.min(...yValues);
+  // const xValues = parcels.map(parcel => parcel.x_parcel);
+  // const yValues = parcels.map(parcel => parcel.y_parcel);
+  // const maxX = Math.max(...xValues);
+  // const maxY = Math.max(...yValues);
+  // const minX = Math.min(...xValues);
+  // const minY = Math.min(...yValues);
 
 
   const renderParcel = (parcel, index) => {
-    const rows = new Array(2).fill(null);
-    const columns = new Array(2).fill(null);
-    const { x_parcel, y_parcel, parcel_info} = parcel;
-    const terrain = parcel_info.map((info, t_index) => (
-      <div key={t_index} 
-      style={{position: 'absolute', left: terrainWidth*info.x, top: terrainHeight* info.y,
-              width: terrainWidth, height: terrainHeight, backgroundColor: 'blue',
-              display: 'flex', flexDirection: 'row', flexWrap: 'wrap', }}
-      >
-        {rows.map((y, rowIndex) =>
-          columns.map((x, columnIndex) => {
-            const imageSrc = images[info.type["tile" + columnIndex.toString() + rowIndex.toString()]]
-            return (
-              <img key={`${index},${t_index},${columnIndex},${rowIndex}`}
-              className="flex cursor-pointer hover:ring" src={imageSrc}  
-              style={{gridColumn: x + 1, gridRow: y + 1, width:terrainWidth/2}}
-              /> 
-            )}
-          )
+    const { x_parcel, y_parcel, parcel_info} = parcel as {x_parcel: number, y_parcel: number, parcel_info:[]};
+    const otherPlayersHere = otherPlayers.filter(
+      (p) => p.position.x >= x_parcel * parcelWidth &&
+             p.position.x < (x_parcel + 1) * parcelWidth &&
+             p.position.y >= y_parcel * parcelHeight &&
+             p.position.y < (y_parcel + 1) * parcelHeight
+    )
+    const x_offset = x_parcel * parcelWidth;
+    const y_offset = y_parcel * parcelHeight;
+
+    const player_x = playerPosition?.x - x_offset;
+    const player_y = playerPosition?.y - y_offset;
+    
+    return (
+      <div key={`${x_parcel},${y_parcel}`} style={{position: 'relative', left: x_parcel*parcelWidth*terrainWidth, top: y_parcel*parcelHeight*terrainHeight}}>
+        {parcel_info.map((terrain, index) => (
+          <div style={{position: 'absolute', left: terrainWidth*terrain.x, top: terrainHeight* terrain.y,
+          width: terrainWidth, height: terrainHeight,
+          display: 'flex', flexDirection: 'row', flexWrap: 'wrap',
+          alignItems: 'center', justifyContent: 'center'
+          }}>
+            <RenderTerrain key={index} terrainValue={terrain} t_index={index} />
+
+            { player_x === terrain.x && player_y === terrain.y ? 
+              <div style={{zIndex: 1, position: 'absolute'}} key={player_x}>
+                <img style={{width: '25px'}} src={ethan} alt="" />
+              </div> 
+              : null
+            }
+
+            { otherPlayersHere.length != 0 ? otherPlayersHere.filter((p) => 
+              p.position.x == x_offset+terrain.x && p.position.y == y_offset+terrain.y).map((p) => 
+                (<div style={{zIndex: 1, position: 'absolute'}} key={p.entity}>
+                  <img style={{width: '25px'}} src={ethan} alt="" />
+                </div>))
+            : null
+            }
+          </div>
+        )
         )}
       </div>
-    ))
+    )
+  }
+
+  const RenderTerrain = (prop: { terrainValue: any; t_index: any; }) => {
+    const {terrainValue, t_index} = prop
+    const rows = new Array(2).fill(null);
+    const columns = new Array(2).fill(null);
+
+    const tiles = rows.map((y, rowIndex) =>
+      columns.map((x, columnIndex) => {
+        const tile_type = "tile" + columnIndex.toString() + rowIndex.toString()
+        const tile_prop = terrainValue.type[tile_type]
+        const imageSrc = images[tile_prop]
+
+        return (
+          <img key={`${t_index},${columnIndex},${rowIndex}`}
+          src={imageSrc}  
+          // style={{gridColumn: x + 1, gridRow: y + 1, width:terrainWidth/2, grid:"none"}}
+          style={{position: 'relative', left: terrainWidth/2*x, top: terrainWidth/2*y,
+          width: terrainWidth/2, height: terrainWidth/2,
+          display: 'flex', flexDirection: 'row', flexWrap: 'wrap', }}
+          /> 
+        )}
+      )
+    )
+
     return (
-      <div key={index} style={{position: 'relative', left: x_parcel*parcelWidth*terrainWidth, top: y_parcel*parcelHeight*terrainHeight}}>
-        {terrain}
+      <div key={t_index} 
+          style={{
+              display: 'flex', flexDirection: 'row', flexWrap: 'wrap', }}
+      >
+        {tiles}
       </div>
     )
   }
 
   return (
-      <div>
+    <div style={{ width: "500px", height: "400px", overflow: "hidden" }}>
+      <div ref={mapRef}>
+        {canSpawn? <button onClick={spawn}>Spawn</button> : null}
       {parcels.map(renderParcel)}
       </div>
+    </div>
   )
 }
 

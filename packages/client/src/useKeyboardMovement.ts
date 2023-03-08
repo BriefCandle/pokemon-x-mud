@@ -8,7 +8,6 @@ export const useKeyboardMovement = () => {
 
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
-      console.log(e.key)
       if (e.key === "w") {
         crawlBy(0, -1);
       }
