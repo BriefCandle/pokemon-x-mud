@@ -17,6 +17,7 @@
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix"
   },
   "devDependencies": {
+    "@prb/test": "^0.2.1",
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/bytes": "^5.7.0",
     "@ethersproject/providers": "^5.7.0",

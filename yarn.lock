@@ -693,17 +693,17 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@latticexyz/cli@1.36.0":
-  version "1.36.0"
-  resolved "https://registry.yarnpkg.com/@latticexyz/cli/-/cli-1.36.0.tgz#2609caeb45762bc9b5e2513154aa0d764b3353ee"
-  integrity sha512-xpnQjYOh8yhB93HNkuGAYBpYu2u5fGN3se0QXA4fR/azDuzVSvHp1TTWqAmw7POnyixVOWLIXN1fEzuWzykFYg==
+"@latticexyz/cli@1.36.1":
+  version "1.36.1"
+  resolved "https://registry.yarnpkg.com/@latticexyz/cli/-/cli-1.36.1.tgz#70553d1e10679ca545fa1551040f9494ba1baf9f"
+  integrity sha512-RlAHLLBuAVTqahCaomNsNY9+8Gb7tbqi4OKD3y9JdnFC30eMj4dSD3Qq20050uYLvoa1LVR/D5hw1bYCGS7rqw==
   dependencies:
     "@improbable-eng/grpc-web" "^0.15.0"
     "@improbable-eng/grpc-web-node-http-transport" "^0.15.0"
-    "@latticexyz/services" "^1.35.0"
-    "@latticexyz/solecs" "^1.35.0"
-    "@latticexyz/std-contracts" "^1.35.0"
-    "@latticexyz/utils" "^1.35.0"
+    "@latticexyz/services" "^1.36.1"
+    "@latticexyz/solecs" "^1.36.1"
+    "@latticexyz/std-contracts" "^1.36.1"
+    "@latticexyz/utils" "^1.36.1"
     "@typechain/ethers-v5" "^10.1.1"
     chalk "^5.0.1"
     chokidar "^3.5.3"
@@ -758,7 +758,7 @@
   resolved "https://registry.yarnpkg.com/@latticexyz/recs/-/recs-1.37.1.tgz#4cb534c6613ffd3e6753dc472a30e66b95e6363b"
   integrity sha512-pmiRU/S+mM2kb4DqNZ3qEPcb0qGw0a8af/Mb5IsAzXekLyI4fle+y+UfV096b2UuTgOtQSfELR2bI3O9/qzi4g==
 
-"@latticexyz/services@^1.35.0":
+"@latticexyz/services@^1.36.1":
   version "1.40.0"
   resolved "https://registry.yarnpkg.com/@latticexyz/services/-/services-1.40.0.tgz#1f683589db303ccd1df330b2811ca20456df3675"
   integrity sha512-wB/TS0XJbH6aPMwxOUFbXvc7YGqjIvTxsSuhIvoLEjeCgStZOR2XxwuERj75iHf8YkF13d1k17RdWODVQQYOzQ==
@@ -776,12 +776,12 @@
     nice-grpc-common "^2.0.0"
     protobufjs "^7.1.2"
 
-"@latticexyz/solecs@1.36.0":
+"@latticexyz/solecs@1.36.1":
   version "1.36.1"
   resolved "https://registry.yarnpkg.com/@latticexyz/solecs/-/solecs-1.36.1.tgz#18a10a16733d734fe582508ee4e15bbc620f2deb"
   integrity sha512-rMjRDvGrLJrcx91icrLUMJ0tYQZNYg8LYYEyxmcSkz7DCEchbmU897yyjzAV18NXixnL4fF/0gs9b2kmbsGV4Q==
 
-"@latticexyz/solecs@^1.35.0":
+"@latticexyz/solecs@^1.36.1":
   version "1.40.0"
   resolved "https://registry.yarnpkg.com/@latticexyz/solecs/-/solecs-1.40.0.tgz#02b503315b666c885bf26520016cf948c1371e88"
   integrity sha512-wDqQRDVqeY6MMqb1mkYsUtjS3UEpcerLie+Nk7BR7KkHMY7P4hr1jfBcq3kKO+hs2I3PBz5Z5VYhr/Rtve/IaA==
@@ -796,12 +796,12 @@
   resolved "https://registry.yarnpkg.com/@latticexyz/std-contracts/-/std-contracts-1.36.1.tgz#b5620637bf566ba6da598c4abaac42a48e1a4986"
   integrity sha512-05QpqClwlmvUMn+NeMLigjl7vTTAjDzrCG5/pEi0C5yHcIVwisi+ZrIDlTUbp31ya0ii8ZgmG/PxurnyPPJdyw==
 
-"@latticexyz/std-contracts@^1.35.0":
+"@latticexyz/std-contracts@^1.36.1":
   version "1.40.0"
   resolved "https://registry.yarnpkg.com/@latticexyz/std-contracts/-/std-contracts-1.40.0.tgz#574fa87b980812a52a2e0514f66a7de54f559715"
   integrity sha512-ipaYeVNr7mZS16Fry4id5wBTyg6FZR/S3kGwW2RxULZm0YuzptPi0FM69R7lO8woe1UlvOo3N4YZLkhPDbLHtg==
 
-"@latticexyz/utils@^1.35.0":
+"@latticexyz/utils@^1.36.1":
   version "1.40.0"
   resolved "https://registry.yarnpkg.com/@latticexyz/utils/-/utils-1.40.0.tgz#e5bce941d0dd729dc85048a930996c97398b35c6"
   integrity sha512-VVJw4HwAc2oBdzQE7+47ywK4Leb38W65HBBKm5HSTq5Zq1n3rmDvl8DMCojHG97BOq1Xc73/gpvkvtp3yL/HBg==
@@ -833,6 +833,11 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@prb/test@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@prb/test/-/test-0.2.1.tgz#ad118730c4a95ee35bec65763b69e41432810b7e"
+  integrity sha512-zJhLnBashJisuuXtmsvSQncY4FS3NnD3PxTc/tmXLVIL1diL7wmsX/Wvh2dwG951UlUxokg53EgvTwsEaucaCg==
 
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"

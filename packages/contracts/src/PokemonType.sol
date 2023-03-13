@@ -3,9 +3,8 @@ pragma solidity >=0.8.0;
 
 // for Pokemon gen II
 enum PokemonType {
-  None, // in the case pokemon has no type2 
   Normal,
-  Fight,
+  Fighting,
   Flying,
   Poison,
   Ground,
@@ -20,5 +19,6 @@ enum PokemonType {
   Psychic,
   Ice,
   Dragon,
-  Dark
+  Dark,
+  None // in the case pokemon has no type2 
 }

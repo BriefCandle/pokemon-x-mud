@@ -18,14 +18,24 @@ export const Parcel = {
 
 export const PokemonInstance = {
   classID: Type.Number, // refer to pokemon classID
+  move0: Type.Number,
   move1: Type.Number,
   move2: Type.Number,
   move3: Type.Number,
-  move4: Type.Number,
   heldItem: Type.Number, // refer to heldItem instance ID
   exp: Type.Number,
+  level: Type.Number,
   currentHP: Type.Number,
-  sc: Type.Number //StatusCondition
+  sc: Type.Number, //StatusCondition
+  ATK: Type.Number,  // attack; A
+  DEF: Type.Number, // defence; B
+  SPATK: Type.Number, // special attack; C
+  SPDEF: Type.Number, // special defence; D
+  SPD: Type.Number, // speed; S
+  CRT: Type.Number, // critical rate
+  ACC: Type.Number, // accuracy
+  EVA: Type.Number, // evasive
+  duration: Type.Number
 }
 
 export const PokemonStats = {

@@ -2,11 +2,24 @@
 pragma solidity >=0.8.0;
 import { System, IWorld } from "solecs/System.sol";
 import { LibMap } from "../libraries/LibMap.sol";
+import { LibTeam } from "../libraries/LibTeam.sol";
+import { LibPokemon } from "../libraries/LibPokemon.sol";
+import { LibBattle } from "../libraries/LibBattle.sol";
+
 import { getAddressById, addressToEntity } from "solecs/utils.sol";
 import { EncounterComponent, ID as EncounterComponentID } from "../components/EncounterComponent.sol";
 import { SpawnPokemonSystem, ID as SpawnPokemonSystemID} from "../systems/SpawnPokemonSystem.sol";
 import { PositionComponent, ID as PositionComponentID, Coord } from "../components/PositionComponent.sol";
 import { PokemonIndexComponent, ID as PokemonIndexComponentID } from "../components/PokemonIndexComponent.sol";
+import { OwnedByComponent, ID as OwnedByComponentID } from "../components/OwnedByComponent.sol";
+import { TeamPokemonsComponent, ID as TeamPokemonsComponentID, TeamPokemons } from "../components/TeamPokemonsComponent.sol";
+import { TeamComponent, ID as TeamComponentID } from "../components/TeamComponent.sol";
+
+import { BattleTeamComponent, ID as BattleTeamComponentID } from "../components/BattleTeamComponent.sol";
+import { BattleSystem, ID as BattleSystemID } from "./BattleSystem.sol";
+
+
+import { BattleType } from "../BattleType.sol";
 
 uint256 constant ID = uint256(keccak256("system.Crawl"));
 
@@ -47,26 +60,40 @@ contract CrawlSystem is System {
     return LibMap.encounterTriggers(world, coord).length > 0;
   }
 
-  function startEncounter(uint256 playerId) internal returns (uint256) {
-    uint256 encounterId = world.getUniqueEntityId();
-    // set up encounter: playerId -> encounterId
-    EncounterComponent encounter = EncounterComponent(getAddressById(components, EncounterComponentID));
-    encounter.set(playerId, encounterId);
+  function startEncounter(uint256 playerId) internal {
+    // 1) spawn a new encountered pokemon instance from a pokemon class and a given level
+    // TODO: determine pokemon classID & level from index from dungeon info & a random number -- use a library function
+    uint32 index=1;
+    uint8 level=5;
+    uint256 wildPokemonID = spawnNewPokemon(index, level);
     
-    // TODO: get a random number
-    // uint256 rand = uint256(keccak256(abi.encode(++entropyNonce, playerId, encounterId, block.difficulty)));
-    // TODO: choose a pokemon class -- use a library function
-    PokemonIndexComponent pokemonIndex = PokemonIndexComponent(getAddressById(components, PokemonIndexComponentID));
-    uint32 index = 1;
-    uint256 classID = pokemonIndex.getEntitiesWithValue(index)[0];
-    //  TODO: choose a pokemon level -- use a library function
-    uint16 level = 5;
-    SpawnPokemonSystem spawnPokemon = SpawnPokemonSystem(getAddressById(world.systems(), SpawnPokemonSystemID));
-    bytes memory byteID = spawnPokemon.executeTyped(classID, level);
-    uint256 pokemonID = abi.decode(byteID, (uint256));
+    // 2) Assign encountered pokemonID to a new team commanded by BattleSystem
+    uint256 wildTeamID = world.getUniqueEntityId();
+    setPokemonToTeam(wildPokemonID, wildTeamID);
     
-    // set up encounter: pokemonId -> playerId
-    encounter.set(pokemonID, encounterId);
-    return encounterId;
+    // 3) set both encountered pokemon and player's teamID in BattleTeam
+    uint256 battleID = world.getUniqueEntityId();
+    setBattleInfo(wildTeamID, playerId, battleID);
+
   }
+
+  function spawnNewPokemon(uint32 index, uint8 level) internal returns (uint256 pokemonID) {
+    // uint256 rand = uint256(keccak256(abi.encode(++entropyNonce, playerId, encounterId, block.difficulty)));
+    uint256 classID = LibPokemon.pokemonIndexToClassID(components, index);
+    SpawnPokemonSystem spawnPokemon = SpawnPokemonSystem(getAddressById(world.systems(), SpawnPokemonSystemID));
+    pokemonID = abi.decode(spawnPokemon.executeTyped(classID, level), (uint256));
+  }
+
+  function setPokemonToTeam(uint256 pokemonID, uint256 teamID) internal {
+    uint256[6] memory pokemonIDs = [pokemonID,0,0,0,0,0];
+    LibTeam.assignPokemonsToTeam(components, pokemonIDs, teamID);
+    LibTeam.setTeamAsOwner(components, pokemonIDs, teamID);
+    LibTeam.assignTeamCommander(components, teamID, BattleSystemID);
+  }
+
+  function setBattleInfo(uint256 teamID, uint256 playerID, uint256 battleID) internal {
+    uint256 playerTeamID = LibTeam.playerIDToTeamID(components, playerID);
+    LibBattle.setTwoTeamsToBattle(components, playerTeamID, teamID, battleID);
+  }
+
 }

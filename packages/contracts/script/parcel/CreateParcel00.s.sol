@@ -14,6 +14,7 @@ contract CreateParcel00Script is Script {
   address CreateParcelSystem = 0x8f86403A4DE0BB5791fa46B8e795C547942fE4Cf;
   int32 x_p = 0;
   int32 y_p = 0;
+
   
   function run() public {
     vm.startBroadcast(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80);

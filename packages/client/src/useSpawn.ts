@@ -22,7 +22,7 @@ export const useSpawn = () => {
       if (!canSpawn) throw new Error("Already spawned");
 
       const bytes = new Uint8Array(0)
-      const tx = await systems["system.Spawn"].execute(bytes)
+      const tx = await systems["system.SpawnPlayer"].execute(bytes)
       await tx.wait();
 
     },[canSpawn]

@@ -12,6 +12,7 @@
 
     "PokemonInstanceComponent",
     "PokemonNicknameComponent",
+    "PokemonEVComponent",
 
     "PositionComponent",
     "ObstructionComponent",
@@ -19,11 +20,13 @@
     "ParcelComponent",
 
     "PlayerComponent",
-
-    "EncounterComponent",
-
+    
     "TeamComponent",
-    "OwnedByComponent"
+    "TeamPokemonsComponent",
+    "OwnedByComponent",
+
+    "BattleTeamComponent",
+    "BattleOrderComponent"
   ],
   "systems": [
     { "name": "CreatePokemonClassSystem", 
@@ -45,14 +48,10 @@
     { "name": "NewPokemonInstanceSystem",
       "writeAccess": [
       "PokemonInstanceComponent"]},
-    { "name": "CrawlSystem",
-      "writeAccess": [
-      "PositionComponent",
-      "EncounterComponent"
-    ]},
     { "name": "SpawnPokemonSystem",
     "writeAccess": [
-      "PokemonInstanceComponent"
+      "PokemonInstanceComponent",
+      "PokemonEVComponent"
     ]
     },
     { "name": "CreateParcelSystem",
@@ -62,7 +61,7 @@
       "ObstructionComponent",
       "EncounterTriggerComponent"
     ]},
-    { "name": "SpawnSystem",
+    { "name": "SpawnPlayerSystem",
       "writeAccess": [
       "PlayerComponent",
       "PositionComponent"
@@ -71,8 +70,23 @@
       "writeAccess": [
         "OwnedByComponent",
         "PokemonInstanceComponent",
-        "TeamComponent"
+        "TeamComponent",
+        "TeamPokemonsComponent"
+
       ]
-    }
+    },
+    { "name": "CrawlSystem",
+    "writeAccess": [
+    "PositionComponent",
+    "OwnedByComponent",
+    "TeamComponent",
+    "TeamPokemonsComponent",
+    "BattleTeamComponent"
+    ]},
+    { "name": "BattleSystem",
+    "writeAccess": [
+      "PokemonInstanceComponent",
+      "BattleOrderComponent"
+    ]}
   ]
 }

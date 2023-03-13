@@ -17,7 +17,7 @@ struct MoveEffect {
     int8 CRT; // critical rate
     int8 ACC; // accuracy
     int8 EVA; // evasive
-    uint8 chance; 
+    uint8 chance; // 0 means no effect
     uint8 duration; // duration is not for sc; 0 means across battle
     MoveTarget target;
     StatusCondition sc;
@@ -25,6 +25,7 @@ struct MoveEffect {
 
 uint256 constant ID = uint256(keccak256("component.MoveEffect"));
 
+// TODO: inheir from a common component with PokemonBattle
 contract MoveEffectComponent is Component {
   constructor(address world) Component(world, ID) {}
 

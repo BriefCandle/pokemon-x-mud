@@ -12,7 +12,7 @@ import { PokemonClassInfo } from "../src/components/PokemonClassInfoComponent.so
 contract CreatePokemonClassScript is Script {
 
   address world = 0x5FbDB2315678afecb367f032d93F642f64180aa3;
-  address CreatePokemonClassSystem = 0xc6e7DF5E7b4f2A278906862b61205850344D4e7d;
+  address CreatePokemonClassSystem = 0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44;
   
   PokemonStats[3] bsArray;
   PokemonStats[3] evArray;
