@@ -6,10 +6,9 @@ import { getAddressById, addressToEntity } from "solecs/utils.sol";
 import { SpawnPokemonSystem, ID as SpawnPokemonSystemID } from "../systems/SpawnPokemonSystem.sol";
 import { PokemonInstanceComponent, ID as PokemonInstanceComponentID } from "../components/PokemonInstanceComponent.sol";
 import { OwnedByComponent, ID as OwnedByComponentID } from "../components/OwnedByComponent.sol";
-import { TeamPokemonsComponent, ID as TeamPokemonsComponentID, TeamPokemons } from "../components/TeamPokemonsComponent.sol";
 import { TeamComponent, ID as TeamComponentID } from "../components/TeamComponent.sol";
 
-
+import { LibTeam } from "../Libraries/LibTeam.sol";
 
 uint256 constant ID = uint256(keccak256("system.ObtainFirstPokemon"));
 
@@ -39,10 +38,8 @@ contract ObtainFirstPokemonSystem is System {
     TeamComponent team = TeamComponent(getAddressById(components,TeamComponentID));
     team.set(teamID, playerID);
 
-    // 3) assign pokemonID to new team, 
-    TeamPokemonsComponent teamPokemons = TeamPokemonsComponent(getAddressById(components, TeamPokemonsComponentID));
-    TeamPokemons memory t = TeamPokemons(pokemonID, 0, 0, 0, 0, 0);
-    teamPokemons.set(teamID, t);
+    // 3) assign pokemonID to new team
+    LibTeam.assignPokemonsToTeam(components, [pokemonID, 0, 0, 0, 0, 0], teamID);
 
     // 4) pokemon is owned by team
     OwnedByComponent owneBy = OwnedByComponent(getAddressById(components, OwnedByComponentID));

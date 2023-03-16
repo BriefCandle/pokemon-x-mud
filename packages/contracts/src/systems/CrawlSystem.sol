@@ -12,7 +12,6 @@ import { SpawnPokemonSystem, ID as SpawnPokemonSystemID} from "../systems/SpawnP
 import { PositionComponent, ID as PositionComponentID, Coord } from "../components/PositionComponent.sol";
 import { PokemonIndexComponent, ID as PokemonIndexComponentID } from "../components/PokemonIndexComponent.sol";
 import { OwnedByComponent, ID as OwnedByComponentID } from "../components/OwnedByComponent.sol";
-import { TeamPokemonsComponent, ID as TeamPokemonsComponentID, TeamPokemons } from "../components/TeamPokemonsComponent.sol";
 import { TeamComponent, ID as TeamComponentID } from "../components/TeamComponent.sol";
 
 import { BattleTeamComponent, ID as BattleTeamComponentID } from "../components/BattleTeamComponent.sol";

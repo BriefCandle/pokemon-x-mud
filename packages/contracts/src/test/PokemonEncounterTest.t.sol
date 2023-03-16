@@ -19,7 +19,6 @@ import { BattleSystem, ID as BattleSystemID } from "../systems/BattleSystem.sol"
 
 import { PositionComponent, ID as PositionComponentID, Coord } from "../components/PositionComponent.sol";
 import { PokemonInstanceComponent, ID as PokemonInstanceComponentID, PokemonInstance } from "../components/PokemonInstanceComponent.sol";
-import { TeamPokemonsComponent, ID as TeamPokemonsComponentID, TeamPokemons } from "../components/TeamPokemonsComponent.sol";
 
 
 contract PokemonEncounterTest is PokemonTest {
@@ -64,87 +63,87 @@ contract PokemonEncounterTest is PokemonTest {
     uint256 battleID =  LibBattle.playerIDToBattleID(components, BattleSystemID);
 
     uint256[] memory commanderIDs = LibBattle.battleIDToCommanderIDs(components, battleID);
-    console.log("commander 1: ", commanderIDs[0]);
-    console.log("commander 2: ", commanderIDs[1]);
-    console.log("battle system: ", BattleSystemID);
+    console.log("commander #1: ", commanderIDs[0]);
+    console.log("commander #2: ", commanderIDs[1]);
+    console.log("battle ID: ", battleID);
     console.log("alice: ", addressToEntity(alice));
 
-    TeamPokemons memory aliceTeam = LibBattle.getTeamPokemons(components, addressToEntity(alice));
-    TeamPokemons memory enemyTeam = LibBattle.getTeamPokemons(components, BattleSystemID);
-    console.log("alice memeber 0: ", aliceTeam.member0);
-    console.log("enemy memeber 0: ", enemyTeam.member0);
+    uint256[] memory aliceTeam = LibBattle.getTeamPokemons(components, addressToEntity(alice));
+    uint256[] memory enemyTeam = LibBattle.getTeamPokemons(components, BattleSystemID);
+    console.log("alice memeber 0: ", aliceTeam[0]);
+    console.log("NPC memeber 0: ", enemyTeam[0]);
 
-    uint8 moveNumber = 0;
+    BattleActionType action = BattleActionType.Move0;
 
     vm.expectRevert("Battle: player cannot command pokemon");
-    attack(enemyTeam.member0, aliceTeam.member0, moveNumber, alice);
+    doAct(enemyTeam[0], aliceTeam[0], action, alice);
     
-    // checkBattleOrderExist should be false
-    assertTrue(LibBattle.checkBattleOrderExist(components, battleID) == false);
+    // battle order only initiated when first attack
+    assertTrue(LibBattle.isBattleOrderExist(components, battleID) == false);
 
     // first attack, alice attack wild pokemon
-    console.log("------ First Round: Attack 1 ------");
-    attack(aliceTeam.member0, enemyTeam.member0, moveNumber, alice);
-    PokemonStats memory stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam.member0);
+    console.log("------ First Round: Attack 1: NPC Attack Alice; precommit ------");
+    doAct(aliceTeam[0], enemyTeam[0], action, alice);
+    PokemonStats memory stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam[0]);
     console.log("alice pokemon HP: ", stats1.HP);
-    PokemonStats memory stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam.member0);
+    PokemonStats memory stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam[0]);
     console.log("enemy pokemon HP: ", stats2.HP);
     uint256 nextPokemon = LibBattle.getBattleNextOrder(components, battleID);
     console.log("next pokemon: ", nextPokemon);
 
 
     // second attack, wild pokemon attack alice
-    console.log("------ First Round: Attack 2 ------");
-    attack(aliceTeam.member0, enemyTeam.member0, moveNumber, alice);
-    stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam.member0);
+    console.log("------ First Round: Attack 1: NPC Attack Alice; resolve ------");
+    doAct(aliceTeam[0], enemyTeam[0], action, alice);
+    stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam[0]);
     console.log("alice pokemon HP: ", stats1.HP);
-    stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam.member0);
+    stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam[0]);
     console.log("enemy pokemon HP: ", stats2.HP);
-    // nextPokemon = LibBattle.getBattleNextOrder(components, battleID);
-    // console.log("next pokemon: ", nextPokemon);
+    nextPokemon = LibBattle.getBattleNextOrder(components, battleID);
+    console.log("next pokemon: ", nextPokemon);
 
 
-    assertTrue(LibBattle.checkBattleOrderExist(components, battleID) == false);
+    // assertTrue(LibBattle.checkBattleOrderExist(components, battleID) == false);
     // third attack, alice attack wild pokemon
-    console.log("------ Second Round: Attack 1 ------");
-    attack(aliceTeam.member0, enemyTeam.member0, moveNumber, alice);
-    stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam.member0);
+    console.log("------ First Round: Attack 2: Alice Attack NPC; precommit ------");
+    doAct(aliceTeam[0], enemyTeam[0], action, alice);
+    stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam[0]);
     console.log("alice pokemon HP: ", stats1.HP);
-    stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam.member0);
+    stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam[0]);
     console.log("enemy pokemon HP: ", stats2.HP);
     nextPokemon = LibBattle.getBattleNextOrder(components, battleID);
     console.log("next pokemon: ", nextPokemon);
 
     // Forth attack, alice attack wild pokemon
-    console.log("------ Second Round: Attack 2 ------");
-    attack(aliceTeam.member0, enemyTeam.member0, moveNumber, alice);
-    stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam.member0);
+    console.log("------ First Round: Attack 2: Alice Attack NPC; resolve  ------");
+    doAct(aliceTeam[0], enemyTeam[0], action, alice);
+    stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam[0]);
     console.log("alice pokemon HP: ", stats1.HP);
-    stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam.member0);
+    stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam[0]);
     console.log("enemy pokemon HP: ", stats2.HP);
-    // nextPokemon = LibBattle.getBattleNextOrder(components, battleID);
-    // console.log("next pokemon: ", nextPokemon);
+    bool isBattleOrder = LibBattle.isBattleOrderExist(components, battleID);
+    console.log("next pokemon: ", isBattleOrder);
 
-        assertTrue(LibBattle.checkBattleOrderExist(components, battleID) == false);
+        // assertTrue(LibBattle.checkBattleOrderExist(components, battleID) == false);
     // third attack, alice attack wild pokemon
-    console.log("------ Third Round: Attack 1 ------");
-    attack(aliceTeam.member0, enemyTeam.member0, moveNumber, alice);
-    stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam.member0);
+    console.log("------ Second Round: Attack 1: NPC Attack Alice; precommit ------");
+    doAct(aliceTeam[0], enemyTeam[0], action, alice);
+    stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam[0]);
     console.log("alice pokemon HP: ", stats1.HP);
-    stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam.member0);
+    stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam[0]);
     console.log("enemy pokemon HP: ", stats2.HP);
     nextPokemon = LibBattle.getBattleNextOrder(components, battleID);
     console.log("next pokemon: ", nextPokemon);
 
     // Forth attack, alice attack wild pokemon
-    console.log("------ Third Round: Attack 2 ------");
-    attack(aliceTeam.member0, enemyTeam.member0, moveNumber, alice);
-    stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam.member0);
+    console.log("------ Second Round: Attack 1: NPC Attack Alice; resolve ------");
+    doAct(aliceTeam[0], enemyTeam[0], action, alice);
+    stats1 = LibPokemon.getPokemonBattleStats(components, aliceTeam[0]);
     console.log("alice pokemon HP: ", stats1.HP);
-    stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam.member0);
+    stats2 = LibPokemon.getPokemonBattleStats(components, enemyTeam[0]);
     console.log("enemy pokemon HP: ", stats2.HP);
-    // nextPokemon = LibBattle.getBattleNextOrder(components, battleID);
-    // console.log("next pokemon: ", nextPokemon);
+    nextPokemon = LibBattle.getBattleNextOrder(components, battleID);
+    console.log("next pokemon: ", nextPokemon);
 
     // uint8 moveNumber = 1;
     // attack(pokemonID1, pokemonID2, moveNumber);
@@ -160,8 +159,8 @@ contract PokemonEncounterTest is PokemonTest {
 
   // function testAttackFromWrong
 
-  function attack(uint256 pokemonID, uint256 targetID, uint8 moveNumber, address player) prank(player) internal {
-    battleSystem.executeTyped(pokemonID, targetID, moveNumber, BattleActionType.Move);
+  function doAct(uint256 pokemonID, uint256 targetID, BattleActionType action, address player) prank(player) internal {
+    battleSystem.executeTyped(pokemonID, targetID, action);
   }
 
   function crawlTo(Coord memory coord) prank(alice) internal {

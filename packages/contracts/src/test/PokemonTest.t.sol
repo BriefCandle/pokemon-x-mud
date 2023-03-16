@@ -30,7 +30,6 @@ import { CreateParcelSystem, ID as CreateParcelSystemID } from "../systems/Creat
 import { MoveNameComponent, ID as MoveNameComponentID } from "../components/MoveNameComponent.sol";
 import { PokemonIndexComponent, ID as PokemonIndexComponentID } from "../components/PokemonIndexComponent.sol";
 import { TeamComponent, ID as TeamComponentID } from "../components/TeamComponent.sol";
-import { TeamPokemonsComponent, ID as TeamPokemonsComponentID, TeamPokemons } from "../components/TeamPokemonsComponent.sol";
 
 contract PokemonTest is MudTest {
   // when inherit: constructor() PokemonTest(new Deploy()) {}

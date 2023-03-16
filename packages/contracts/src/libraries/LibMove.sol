@@ -27,10 +27,12 @@ library LibMove {
    * @param components: registry address of components
    * @param pokemonID: pokemonID of attacking pokemon
    * @param targetID: pokemonID of defending pokemon
-   * @param moveNumber: moveID used by attacking pokemon
+   * @param moveID: moveID used by attacking pokemon
+   * @param randomNumber: used to calculate crit
    */
-  function calculateMoveEffectOnPokemons(IUint256Component components, uint256 pokemonID, uint256 targetID, uint8 moveNumber) 
-    internal view returns (PokemonInstance memory, PokemonInstance memory) {
+  function calculateMoveEffectOnPokemons(
+    IUint256Component components, uint256 pokemonID, uint256 targetID, uint256 moveID, 
+    uint256 randomNumber) internal view returns (PokemonInstance memory, PokemonInstance memory) {
     // pokemon 
     PokemonStats memory attackPokemon = LibPokemon.getPokemonBattleStats(components, pokemonID);
     PokemonStats memory defendPokemon = LibPokemon.getPokemonBattleStats(components, targetID);
@@ -38,15 +40,18 @@ library LibMove {
     PokemonInstance memory defendPokemonI = LibPokemon.getPokemonInstance(components, targetID);
     PokemonClassInfo memory defendClass = LibPokemon.getPokemonClassInfo(components, targetID);
     // move info and effect
-    uint256 moveID = LibPokemon.getPokemonMoveID(components, pokemonID, moveNumber);
     MoveEffect memory moveEffect = LibMove.getMoveEffect(components, moveID);
     MoveInfo memory moveInfo = LibMove.getMoveInfo(components, moveID);
     // type effect
     uint8 effectValue = LibPokemon.getTotalEffectValue(moveInfo.TYP, defendClass.type1, defendClass.type2);
     // TODO: implement crt with randomness
+    bool isCrit = checkCritical(attackPokemon.SPD, moveEffect.CRT, randomNumber);
+    uint32 critEffect = isCrit ? 2 : 1;
+    // TODO: implement special attack type to check special defence
+    // TODO: implement evasion check; when true return unchanged pokemon instace, attackPokemonI...
     // HP & DMG
     uint32 DMG = ((2 * uint32(attackPokemonI.level) / 5 + 2) * uint32(moveInfo.PWR) * 
-      uint32(attackPokemon.ATK) / uint32(defendPokemon.DEF) / 50 + 2) * uint32(effectValue);
+      uint32(attackPokemon.ATK) / uint32(defendPokemon.DEF) / 50 + 2) * uint32(effectValue) * critEffect;
     defendPokemonI.currentHP = defendPokemonI.currentHP > DMG ? defendPokemonI.currentHP - DMG : 0;
     // other stats in instance
     if (moveEffect.target == MoveTarget.Foe) {
@@ -64,6 +69,16 @@ library LibMove {
     }
     return (attackPokemonI, defendPokemonI);
   }
+
+  // complicated to calculate crit chance for gen II onward
+  // https://bulbapedia.bulbagarden.net/wiki/Critical_hit
+  // use gen I for now
+  function checkCritical(uint8 SPD, int8 CRT, uint256 randomNumber) internal pure returns (bool) {
+    uint32 multiplier = LibPokemon.getStatsMultipled(CRT, 1);
+    uint256 threshold = randomNumber % 256;
+    return multiplier * SPD / 2 > threshold ? true : false;
+  }
+
   function getMoveEffect(IUint256Component components, uint256 moveID) internal view returns (MoveEffect memory) {
     MoveEffectComponent moveEffect = MoveEffectComponent(getAddressById(components, MoveEffectComponentID));
     return moveEffect.getValue(moveID);

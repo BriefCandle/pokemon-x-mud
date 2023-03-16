@@ -26,7 +26,10 @@
     "OwnedByComponent",
 
     "BattleTeamComponent",
-    "BattleOrderComponent"
+    "BattleOrderComponent",
+
+    "RNGActionTypeComponent",
+    "RNGPrecommitComponent"
   ],
   "systems": [
     { "name": "CreatePokemonClassSystem", 
@@ -72,7 +75,6 @@
         "PokemonInstanceComponent",
         "TeamComponent",
         "TeamPokemonsComponent"
-
       ]
     },
     { "name": "CrawlSystem",
@@ -86,7 +88,9 @@
     { "name": "BattleSystem",
     "writeAccess": [
       "PokemonInstanceComponent",
-      "BattleOrderComponent"
+      "BattleOrderComponent",
+      "RNGActionTypeComponent",
+      "RNGPrecommitComponent"
     ]}
   ]
 }

@@ -17,6 +17,7 @@ import { MoveLevelPokemonComponent, ID as MoveLevelPokemonComponentID } from "..
 import { LevelRate } from "../LevelRate.sol";
 import { TypeEffective } from "../TypeEffective.sol";
 import { PokemonType } from "../PokemonType.sol";
+import { BattleActionType } from "../BattleActionType.sol";
 
 library LibPokemon {
 
@@ -40,6 +41,7 @@ library LibPokemon {
     return PokemonStats(uint8(HP), uint8(ATK), uint8(DEF), uint8(SPATK), uint8(SPDEF), uint8(SPD));
   }
 
+  // the pokemon stats that should be used in battle
   function getPokemonBattleStats(IUint256Component components, uint256 pokemonID) internal view returns(PokemonStats memory) {
     // exp & classID -> baseStats
     PokemonInstance memory pokemonIns = getPokemonInstance(components, pokemonID);
@@ -54,7 +56,7 @@ library LibPokemon {
     uint32 SPATK = (2 * uint32(base.SPATK) + uint32(ev.SPATK)/4) * uint32(level) / 100 + 5;
     uint32 SPDEF = (2 * uint32(base.SPDEF) + uint32(ev.SPDEF)/4) * uint32(level) / 100 + 5;
     uint32 SPD = (2 * uint32(base.SPD) + uint32(ev.SPD)/4) * uint32(level) / 100 + 5;
-    // add multiplier
+    // add multiplier from pokemon instance
     return PokemonStats(uint8(currentHP), 
       uint8(getStatsMultipled(pokemonIns.ATK, ATK)), 
       uint8(getStatsMultipled(pokemonIns.DEF, DEF)), 
@@ -98,6 +100,14 @@ library LibPokemon {
     else if (moveNumber == 1) return instance.move1;
     else if (moveNumber == 2) return instance.move2;
     else return instance.move3;
+  }
+
+  function moveTypeToMoveNumber(BattleActionType moveType) internal pure returns (uint8 moveNumber) {
+    if (moveType == BattleActionType.Move0) return 0;
+    else if (moveType == BattleActionType.Move1) return 1;
+    else if (moveType == BattleActionType.Move2) return 2;
+    else if (moveType == BattleActionType.Move3) return 3;
+    else revert("not move type");
   }
 
   // TODO: implement a method to get the last four nonzero moves from movelLevel array according to level

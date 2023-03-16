@@ -6,7 +6,7 @@ import { IUint256Component } from "solecs/interfaces/IUint256Component.sol";
 import { getAddressById } from "solecs/utils.sol";
 
 import { TeamComponent, ID as TeamComponentID } from "../components/TeamComponent.sol";
-import { TeamPokemonsComponent, ID as TeamPokemonsComponentID, TeamPokemons } from "../components/TeamPokemonsComponent.sol";
+import { TeamPokemonsComponent, ID as TeamPokemonsComponentID } from "../components/TeamPokemonsComponent.sol";
 import { BattleTeamComponent, ID as BattleTeamComponentID } from "../components/BattleTeamComponent.sol";
 import { BattleOrderComponent, ID as BattleOrderComponentID, BattleOrder } from "../components/BattleOrderComponent.sol";
 import { MoveEffectComponent, ID as MoveEffectComponentID, MoveEffect } from "../components/MoveEffectComponent.sol";
@@ -27,11 +27,11 @@ import {LibMove} from "./LibMove.sol";
 
 
 library LibBattle {
-
+  
   // ---------- Battle Order ------------
   // if checkBattleOrder is false, we setBattleOrder(), and then we getBattleOrder();
   // else, we getBattleOrder(), which returns whichever pokemon goes first
-  function checkBattleOrderExist(IUint256Component components, uint256 battleID) internal view returns(bool ) {
+  function isBattleOrderExist(IUint256Component components, uint256 battleID) internal view returns(bool ) {
     BattleOrderComponent battleOrderC = BattleOrderComponent(getAddressById(components, BattleOrderComponentID));
     if (!battleOrderC.has(battleID)) return false;
     else {
@@ -39,6 +39,12 @@ library LibBattle {
       if (battleOrder.length == 0) return false;
       else return true;
     }
+  }
+
+  // called when battleOrder exists & length > 0
+  function deleteBattleOrder(IUint256Component components, uint256 battleID) internal {
+    BattleOrderComponent battleOrderC = BattleOrderComponent(getAddressById(components, BattleOrderComponentID));
+    battleOrderC.remove(battleID);
   }
 
   function setBattleOrder(IUint256Component components, uint256 pokemonID0, uint256 pokemonID1, uint256 battleID) internal{
@@ -56,7 +62,7 @@ library LibBattle {
     battleOrderC.set(battleID, battleOrder);
   }
 
-  // this requires battleOrder exists & length > 0
+  // called when battleOrder exists & length > 0
   function getBattleNextOrder(IUint256Component components, uint256 battleID) internal view returns(uint256) {
     BattleOrderComponent battleOrderC = BattleOrderComponent(getAddressById(components, BattleOrderComponentID));
     uint256[] memory battleOrder = battleOrderC.getValue(battleID);
@@ -65,8 +71,8 @@ library LibBattle {
     // else return battleOrder.pokemon0;
   }
 
-  // this requires battleOrder exists & length > 0
-  function resetDonePokemon(IUint256Component components, uint256 battleID, uint256 pokemonID) internal {
+  // called when battleOrder exists & length > 0
+  function resetDonePokemon(IUint256Component components, uint256 battleID) internal {
     BattleOrderComponent battleOrderC = BattleOrderComponent(getAddressById(components, BattleOrderComponentID));
     uint256[] memory battleOrder = battleOrderC.getValue(battleID);
     uint256[] memory newBattleOrder = new uint256[](battleOrder.length-1);
@@ -115,7 +121,7 @@ library LibBattle {
   // }
 
   // playerID -(TeamC)-> teamID -(TeamPokemonsC) -> TeamPokemons
-  function getTeamPokemons(IUint256Component components, uint256 playerID) internal view returns (TeamPokemons memory teamPokemons) {
+  function getTeamPokemons(IUint256Component components, uint256 playerID) internal view returns (uint256[] memory teamPokemons) {
     TeamComponent team = TeamComponent(getAddressById(components, TeamComponentID));
     uint256 teamID = team.getEntitiesWithValue(playerID)[0];
     TeamPokemonsComponent teamPokemonsC = TeamPokemonsComponent(getAddressById(components, TeamPokemonsComponentID));
@@ -132,7 +138,7 @@ library LibBattle {
   }
 
   //  playerID -...-> battleID -...-> playerIDs[another] -> TeamPokemons
-  function getEnemyPokemons(IUint256Component components, uint256 playerID) internal view returns (TeamPokemons memory teamPokemons) {
+  function getEnemyPokemons(IUint256Component components, uint256 playerID) internal view returns (uint256[] memory teamPokemons) {
     uint256 ememyPlayerID = getEnemyPlayerID(components, playerID);
     return getTeamPokemons(components, ememyPlayerID);
   }
