@@ -5,12 +5,13 @@ import { Deploy } from "./Deploy.sol";
 import "std-contracts/test/MudTest.t.sol";
 import { getAddressById, addressToEntity } from "solecs/utils.sol";
 
+import { LibMap } from "../libraries/LibMap.sol";
 
 import { PokemonStats } from "../components/PokemonStatsComponent.sol";
 import { PokemonType } from "../PokemonType.sol";
 import { MoveCategory } from "../MoveCategory.sol";
 import { LevelRate } from "../LevelRate.sol";
-import { PokemonClassInfo } from "../components/PokemonClassInfoComponent.sol";
+import { PokemonClassInfo } from "../components/ClassInfoComponent.sol";
 import { MoveInfo } from "../components/MoveInfoComponent.sol";
 import { MoveEffect } from "../components/MoveEffectComponent.sol";
 import { MoveTarget } from "../MoveTarget.sol";
@@ -24,12 +25,12 @@ import { CreateMoveClassSystem, ID as CreateMoveClassSystemID } from "../systems
 import { ConnectPokemonMovesSystem, ID as ConnectPokemonMovesSystemID } from "../systems/ConnectPokemonMovesSystem.sol";
 import { SpawnPokemonSystem, ID as SpawnPokemonSystemID } from "../systems/SpawnPokemonSystem.sol";
 import { ObtainFirstPokemonSystem, ID as ObtainFirstPokemonSystemID } from "../systems/ObtainFirstPokemonSystem.sol";
-import { ObtainFirstPokemonSystem, ID as ObtainFirstPokemonSystemID } from "../systems/ObtainFirstPokemonSystem.sol";
 import { CreateParcelSystem, ID as CreateParcelSystemID } from "../systems/CreateParcelSystem.sol";
+import { CreateDungeonSystem, ID as CreateDungeonSystemID } from "../systems/CreateDungeonSystem.sol";
 
+import { ID as PositionComponentID, Coord } from "../components/PositionComponent.sol";
 import { MoveNameComponent, ID as MoveNameComponentID } from "../components/MoveNameComponent.sol";
-import { PokemonIndexComponent, ID as PokemonIndexComponentID } from "../components/PokemonIndexComponent.sol";
-import { TeamComponent, ID as TeamComponentID } from "../components/TeamComponent.sol";
+import { ClassIndexComponent, ID as ClassIndexComponentID } from "../components/ClassIndexComponent.sol";
 
 contract PokemonTest is MudTest {
   // when inherit: constructor() PokemonTest(new Deploy()) {}
@@ -47,9 +48,9 @@ contract PokemonTest is MudTest {
 
   // -------------- SETUP POKEMON CLASS, MOVE, AND STUFF --------------
 
-  function createPokemonClass(PokemonStats memory baseStats, PokemonStats memory eV, PokemonClassInfo memory classInfo, uint32 index) internal {
+  function createPokemonClass(uint32 baseExp, PokemonStats memory baseStats, PokemonStats memory eV, PokemonClassInfo memory classInfo, uint32 index) internal {
     CreatePokemonClassSystem createPokemonClassS = CreatePokemonClassSystem(system(CreatePokemonClassSystemID));
-    createPokemonClassS.executeTyped(baseStats, eV, classInfo, index);
+    createPokemonClassS.executeTyped(baseExp, baseStats, eV, classInfo, index);
   }
 
   function createMoveClass(string memory name, MoveInfo memory info, MoveEffect memory effect) internal {
@@ -67,19 +68,20 @@ contract PokemonTest is MudTest {
       getEntitiesWithValue(abi.encode(name))[0];
   }
 
-  function getPokemonClassIDFromIndex(uint32 index) internal view returns (uint256 pokemonID) {
-    pokemonID = PokemonIndexComponent(getAddressById(components, PokemonIndexComponentID)).
+  function getPokemonClassIDFromIndex(uint32 index) internal view returns (uint256 pokemonClassID) {
+    pokemonClassID = ClassIndexComponent(getAddressById(components, ClassIndexComponentID)).
       getEntitiesWithValue(abi.encode(index))[0];
   }
 
 
   function setupPokemon() internal {
     // create bulbasaur pokemon class
+    uint32 baseExp = 64;
     PokemonStats memory baseStats = PokemonStats(45,49,49,65,65,45);
     PokemonStats memory eV = PokemonStats(0,0,0,1,0,0);
     PokemonClassInfo memory classInfo = PokemonClassInfo(45,PokemonType.Grass,PokemonType.Poison,LevelRate.MediumSlow);
     uint32 index = 1; 
-    createPokemonClass(baseStats, eV, classInfo, index);
+    createPokemonClass(baseExp, baseStats, eV, classInfo, index);
     
     // create tackle move class
     string memory name = 'Tackle';
@@ -104,19 +106,17 @@ contract PokemonTest is MudTest {
 
 
   // -------------- SETUP POKEMON CLASS, MOVE, AND STUFF --------------
+  function spawnPlayer() prank(alice) internal {
+    SpawnPlayerSystem spawnPlayerS = SpawnPlayerSystem(system(SpawnPlayerSystemID));
+    spawnPlayerS.execute(zero);
+  }
 
   function obtainFirstPokemon() prank(alice) internal {
     // get classID of bulbasaur of index = 1
     console.log("first pokemon", msg.sender);
     uint32 index = 1;
-    uint256 pokemonClassID = getPokemonClassIDFromIndex(index);
     ObtainFirstPokemonSystem obtainFirstS = ObtainFirstPokemonSystem(system(ObtainFirstPokemonSystemID));
-    obtainFirstS.executeTyped(pokemonClassID);
-  }
-
-  function spawnPlayer() prank(alice) internal {
-    SpawnPlayerSystem spawnPlayerS = SpawnPlayerSystem(system(SpawnPlayerSystemID));
-    spawnPlayerS.execute(zero);
+    obtainFirstS.executeTyped(index);
   }
 
   function setupPlayer() internal {
@@ -149,12 +149,29 @@ contract PokemonTest is MudTest {
     createParcelS.executeTyped(x_p,y_p,terrain);
   }
 
+  function createDungeon() internal {
+    Coord memory parcel_coord = Coord(0,0);
+    uint256 parcelID = LibMap.parcelID(world, parcel_coord)[0];
+    console.log("parcelID", parcelID);
+    uint32 level= 5;
+    uint32[] memory indexes = new uint32[](1);
+    indexes[0] = 1;
+    CreateDungeonSystem(system(CreateDungeonSystemID)).executeTyped(parcelID, level, indexes);
+    // Coord memory coord = Coord(0,1);
+    // parcel_coord = LibMap.positionCoordToParcelCoord(coord);
+    // parcelID = LibMap.parcelID(world, parcel_coord)[0];
+    // // parcelID = LibMap.dungeonParcelID(world, parcel_coord)[0];
+    // uint32 index = LibMap.getDungeonPokemons(components, parcelID)[0];
+    // level = LibMap.getDungeonLevel(components, parcelID);
+  }
+
   // -------------- SETUP POKEMON CLASS, MOVE, AND STUFF --------------
 
   function setup() internal {
     setupPokemon();
     setupPlayer();
     createParcel();
+    createDungeon();
   }
 
 }

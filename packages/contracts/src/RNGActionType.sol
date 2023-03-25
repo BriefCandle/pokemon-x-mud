@@ -8,5 +8,5 @@ enum BattleActionType {
   Move2,
   Move3,
   UsePokeball,
-  Flee
+  Escape
 }

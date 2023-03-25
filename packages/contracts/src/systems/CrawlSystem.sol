@@ -8,14 +8,11 @@ import { LibBattle } from "../libraries/LibBattle.sol";
 
 import { getAddressById, addressToEntity } from "solecs/utils.sol";
 import { EncounterComponent, ID as EncounterComponentID } from "../components/EncounterComponent.sol";
-import { SpawnPokemonSystem, ID as SpawnPokemonSystemID} from "../systems/SpawnPokemonSystem.sol";
 import { PositionComponent, ID as PositionComponentID, Coord } from "../components/PositionComponent.sol";
-import { PokemonIndexComponent, ID as PokemonIndexComponentID } from "../components/PokemonIndexComponent.sol";
 import { OwnedByComponent, ID as OwnedByComponentID } from "../components/OwnedByComponent.sol";
-import { TeamComponent, ID as TeamComponentID } from "../components/TeamComponent.sol";
 
-import { BattleTeamComponent, ID as BattleTeamComponentID } from "../components/BattleTeamComponent.sol";
 import { BattleSystem, ID as BattleSystemID } from "./BattleSystem.sol";
+import { SpawnPokemonSystem, ID as SpawnPokemonSystemID } from "./SpawnPokemonSystem.sol";
 
 
 import { BattleType } from "../BattleType.sol";
@@ -23,7 +20,10 @@ import { BattleType } from "../BattleType.sol";
 uint256 constant ID = uint256(keccak256("system.Crawl"));
 
 contract CrawlSystem is System {
-  uint256 internal entropyNonce = 1;
+
+  uint256 entropyNonce;
+  
+  uint8 constant team_size = 4;
 
   constructor(IWorld _world, address _components) System(_world, _components) {}
 
@@ -31,6 +31,7 @@ contract CrawlSystem is System {
     return executeTyped(abi.decode(args, (Coord)));
   }
 
+  // 1) if there is no commited
   function executeTyped(Coord memory coord) public returns (bytes memory) {
     uint256 playerId = addressToEntity(msg.sender);
 
@@ -46,53 +47,47 @@ contract CrawlSystem is System {
 
     position.set(playerId, coord);
 
-    if (canTriggerEncounter(coord)) {
+    if (LibMap.encounterTriggers(world, coord).length > 0) {
+      // TODO: requires a team from playerID
+      require(LibTeam.playerIDToTeamPokemonIDs(components, playerId).length != 0, "no team pokemons");
+      // TODO: use a random number to get encounterTrigger & pokemon index from array
       // 20% chance to trigger encounter
-      // uint256 rand = uint256(keccak256(abi.encode(++entropyNonce, playerId, coord, block.difficulty)));
+      uint256 rand = uint256(keccak256(abi.encode(++entropyNonce, playerId, coord, block.difficulty)));
       // if (rand % 5 == 0) {
-        startEncounter(playerId);
+        startEncounter(playerId, coord, rand);
       // }
     }
   }
 
-  function canTriggerEncounter(Coord memory coord) internal view returns (bool) {
-    return LibMap.encounterTriggers(world, coord).length > 0;
-  }
-
-  function startEncounter(uint256 playerId) internal {
-    // 1) spawn a new encountered pokemon instance from a pokemon class and a given level
-    // TODO: determine pokemon classID & level from index from dungeon info & a random number -- use a library function
-    uint32 index=1;
-    uint8 level=5;
-    uint256 wildPokemonID = spawnNewPokemon(index, level);
+  function startEncounter(uint256 playerID, Coord memory coord, uint256 rand) internal {
     
-    // 2) Assign encountered pokemonID to a new team commanded by BattleSystem
+    // 1) spawn a new encountered pokemon instance from a pokemon class and a given level
+    Coord memory parcel_coord = LibMap.positionCoordToParcelCoord(coord);
+    uint256 parcelID = LibMap.parcelID(world, parcel_coord)[0];
+    uint32[] memory indexes = LibMap.getDungeonPokemons(components, parcelID);
+    uint32 index = indexes[rand % indexes.length];
+    uint32 level = LibMap.getDungeonLevel(components, parcelID);
+    
+    uint256 wildPokemonID = world.getUniqueEntityId();
+    SpawnPokemonSystem(getAddressById(world.systems(), SpawnPokemonSystemID)).executeTyped(
+      index, level, wildPokemonID
+    );
+    
+    // 2) setup newly encountered pokemonID to a new team commanded by BattleSystem
     uint256 wildTeamID = world.getUniqueEntityId();
-    setPokemonToTeam(wildPokemonID, wildTeamID);
+    uint256[] memory pokemonIDs = new uint256[](team_size);
+    pokemonIDs[0] = wildPokemonID;
+    LibTeam.setupPokemonsToTeam(components, pokemonIDs, wildTeamID, BattleSystemID);
     
     // 3) set both encountered pokemon and player's teamID in BattleTeam
     uint256 battleID = world.getUniqueEntityId();
-    setBattleInfo(wildTeamID, playerId, battleID);
-
-  }
-
-  function spawnNewPokemon(uint32 index, uint8 level) internal returns (uint256 pokemonID) {
-    // uint256 rand = uint256(keccak256(abi.encode(++entropyNonce, playerId, encounterId, block.difficulty)));
-    uint256 classID = LibPokemon.pokemonIndexToClassID(components, index);
-    SpawnPokemonSystem spawnPokemon = SpawnPokemonSystem(getAddressById(world.systems(), SpawnPokemonSystemID));
-    pokemonID = abi.decode(spawnPokemon.executeTyped(classID, level), (uint256));
-  }
-
-  function setPokemonToTeam(uint256 pokemonID, uint256 teamID) internal {
-    uint256[6] memory pokemonIDs = [pokemonID,0,0,0,0,0];
-    LibTeam.assignPokemonsToTeam(components, pokemonIDs, teamID);
-    LibTeam.setTeamAsOwner(components, pokemonIDs, teamID);
-    LibTeam.assignTeamCommander(components, teamID, BattleSystemID);
-  }
-
-  function setBattleInfo(uint256 teamID, uint256 playerID, uint256 battleID) internal {
     uint256 playerTeamID = LibTeam.playerIDToTeamID(components, playerID);
-    LibBattle.setTwoTeamsToBattle(components, playerTeamID, teamID, battleID);
+    LibBattle.setTwoTeamsToBattle(components, playerTeamID, wildTeamID, battleID);
+
+    // 4) init battle order
+    LibBattle.initBattleOrder(components, battleID);
   }
+
+
 
 }

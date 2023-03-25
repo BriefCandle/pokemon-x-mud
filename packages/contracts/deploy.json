@@ -1,23 +1,35 @@
 {
   "components": [
-    "BaseStatsComponent", 
-    "EffortValueComponent", 
-    "PokemonClassInfoComponent",
-    "PokemonIndexComponent",
+    "ClassBaseExpComponent",
+    "ClassBaseStatsComponent", 
+    "ClassEffortValueComponent", 
+    "ClassInfoComponent",
+    "ClassIndexComponent",
 
     "MoveNameComponent",
     "MoveInfoComponent",
     "MoveEffectComponent",
     "MoveLevelPokemonComponent",
 
-    "PokemonInstanceComponent",
     "PokemonNicknameComponent",
     "PokemonEVComponent",
+    "PokemonBattleStatsComponent",
+    "PokemonItemComponent",
+    "PokemonHPComponent",
+    "PokemonClassIDComponent",
+    "PokemonExpComponent",
+    "PokemonLevelComponent",
+    "PokemonMovesComponent",
+    "PokemonStatusComponent",
 
     "PositionComponent",
     "ObstructionComponent",
     "EncounterTriggerComponent",
     "ParcelComponent",
+    "ParcelCoordComponent",
+
+    "DungeonLevelComponent",
+    "DungeonPokemonsComponent",
 
     "PlayerComponent",
     
@@ -25,19 +37,21 @@
     "TeamPokemonsComponent",
     "OwnedByComponent",
 
-    "BattleTeamComponent",
-    "BattleOrderComponent",
+    "TeamBattleComponent",
+    "BattlePokemonsComponent",
 
     "RNGActionTypeComponent",
-    "RNGPrecommitComponent"
+    "RNGPrecommitComponent",
+    "RNGTargetComponent"
   ],
   "systems": [
     { "name": "CreatePokemonClassSystem", 
       "writeAccess": [
-      "BaseStatsComponent", 
-      "EffortValueComponent",
-      "PokemonClassInfoComponent",
-      "PokemonIndexComponent"
+      "ClassBaseExpComponent",
+      "ClassBaseStatsComponent", 
+      "ClassEffortValueComponent",
+      "ClassInfoComponent",
+      "ClassIndexComponent"
     ]},
     { "name": "CreateMoveClassSystem", 
       "writeAccess": [
@@ -47,20 +61,26 @@
     ]},
     { "name": "ConnectPokemonMovesSystem",
       "writeAccess": [
-      "MoveLevelPokemonComponent"]},
-    { "name": "NewPokemonInstanceSystem",
-      "writeAccess": [
-      "PokemonInstanceComponent"]},
+      "MoveLevelPokemonComponent"
+    ]},
     { "name": "SpawnPokemonSystem",
     "writeAccess": [
-      "PokemonInstanceComponent",
-      "PokemonEVComponent"
+      "PokemonEVComponent",
+      "PokemonBattleStatsComponent",
+      "PokemonClassIDComponent",
+      "PokemonExpComponent",
+      "PokemonLevelComponent",
+      "PokemonMovesComponent",
+      "PokemonHPComponent",
+      "PokemonItemComponent",
+      "PokemonStatusComponent"
     ]
     },
     { "name": "CreateParcelSystem",
       "writeAccess": [
       "PositionComponent",
       "ParcelComponent",
+      "ParcelCoordComponent",
       "ObstructionComponent",
       "EncounterTriggerComponent"
     ]},
@@ -72,7 +92,6 @@
     { "name": "ObtainFirstPokemonSystem",
       "writeAccess": [
         "OwnedByComponent",
-        "PokemonInstanceComponent",
         "TeamComponent",
         "TeamPokemonsComponent"
       ]
@@ -83,14 +102,60 @@
     "OwnedByComponent",
     "TeamComponent",
     "TeamPokemonsComponent",
-    "BattleTeamComponent"
+    "TeamBattleComponent",
+    "BattlePokemonsComponent"
     ]},
     { "name": "BattleSystem",
     "writeAccess": [
-      "PokemonInstanceComponent",
-      "BattleOrderComponent",
+      "BattlePokemonsComponent",
       "RNGActionTypeComponent",
-      "RNGPrecommitComponent"
+      "RNGPrecommitComponent",
+      "RNGTargetComponent"
+    ]},
+    { "name": "ActionMoveSystem",
+    "writeAccess": [
+      "BattlePokemonsComponent",
+      "RNGActionTypeComponent",
+      "RNGPrecommitComponent",
+      "RNGTargetComponent",
+      "PokemonHPComponent",
+      "PokemonBattleStatsComponent"
+    ]},
+    { "name": "ActionPokeballSystem",
+    "writeAccess": [
+      "BattlePokemonsComponent",
+      "RNGActionTypeComponent",
+      "RNGPrecommitComponent",
+      "RNGTargetComponent",
+      "TeamPokemonsComponent"
+    ]},
+    { "name": "ActionEscapeSystem",
+    "writeAccess": [
+      "BattlePokemonsComponent",
+      "TeamBattleComponent",
+      "RNGActionTypeComponent",
+      "RNGPrecommitComponent",
+      "RNGTargetComponent",
+      "TeamPokemonsComponent"
+    ]},
+    { "name": "HandleTeamDefeatSystem",
+    "writeAccess": [
+      "TeamBattleComponent",
+      "BattlePokemonsComponent",
+      "TeamComponent"
+    ]},
+    { "name": "HandlePokemonDeadSystem",
+    "writeAccess": [
+      "TeamPokemonsComponent",
+      "BattlePokemonsComponent",
+      "OwnedByComponent",
+      "PokemonExpComponent",
+      "PokemonLevelComponent"
+    ]},    
+    { "name": "CreateDungeonSystem",
+    "writeAccess": [
+      "DungeonLevelComponent",
+      "DungeonPokemonsComponent"
     ]}
   ]
 }

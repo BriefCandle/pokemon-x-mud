@@ -9,9 +9,8 @@ import { PositionComponent, ID as PositionComponentID, Coord } from "../componen
 import { ObstructionComponent, ID as ObstructionComponentID } from "../components/ObstructionComponent.sol";
 import { EncounterTriggerComponent, ID as EncounterTriggerComponentID } from "../components/EncounterTriggerComponent.sol";
 
-
+import { ParcelCoordComponent, ID as ParcelCoordComponentID} from "../components/ParcelCoordComponent.sol";
 import { ParcelComponent, ID as ParcelComponentID, Parcel, parcelWidth, parcelHeight } from "../components/ParcelComponent.sol";
-import { ParcelUninitComponent, ID as ParcelUninitComponentID } from "../components/ParcelUninitComponent.sol";
 
 
 uint256 constant ID = uint256(keccak256("system.CreateParcel"));
@@ -34,6 +33,8 @@ contract CreateParcelSystem is System {
     ParcelComponent pComp = ParcelComponent(getAddressById(components, ParcelComponentID));
     pComp.set(parcelID, Parcel(x_p, y_p, terrainMap));
 
+    ParcelCoordComponent pcComp = ParcelCoordComponent(getAddressById(components, ParcelCoordComponentID));
+    pcComp.set(parcelID, Coord(x_p, y_p));
 
     PositionComponent position = PositionComponent(getAddressById(components, PositionComponentID));
     ObstructionComponent obstruction = ObstructionComponent(getAddressById(components, ObstructionComponentID));
@@ -69,7 +70,5 @@ contract CreateParcelSystem is System {
       }
     }
 
-    // ParcelUninitComponent puComp = ParcelUninitComponent(getAddressById(components, ParcelUninitComponentID));
-    // puComp.set(parcelID);
   }
 }

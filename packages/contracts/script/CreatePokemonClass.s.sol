@@ -4,7 +4,7 @@ import "../lib/forge-std/src/Script.sol";
 import { PokemonStats } from "../src/components/PokemonStatsComponent.sol";
 import { PokemonType } from "../src/PokemonType.sol";
 import { LevelRate } from "../src/LevelRate.sol";
-import { PokemonClassInfo } from "../src/components/PokemonClassInfoComponent.sol";
+import { PokemonClassInfo } from "../src/components/ClassInfoComponent.sol";
 
 // source .env
 // forge script script/CreatePokemonClass.s.sol:CreatePokemonClassScript --rpc-url http://localhost:8545 --broadcast

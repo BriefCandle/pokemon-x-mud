@@ -6,8 +6,6 @@ import { PositionComponent, ID as PositionComponentID, Coord } from "../componen
 import { PlayerComponent, ID as PlayerComponentID } from "../components/PlayerComponent.sol";
 import { LibMap } from "../libraries/LibMap.sol";
 import { parcelWidth, parcelHeight } from "../components/ParcelComponent.sol";
-import { ObtainFirstPokemonSystem, ID as ObtainFirstPokemonSystemID } from "../systems/ObtainFirstPokemonSystem.sol";
-import { PokemonIndexComponent, ID as PokemonIndexComponentID } from "../components/PokemonIndexComponent.sol";
 
 uint256 constant ID = uint256(keccak256("system.SpawnPlayer"));
 
@@ -52,13 +50,4 @@ contract SpawnPlayerSystem is System {
     revert("No place to spawn");
   }
 
-  // // TODO: a temporary solution to gift new player a bulbasaur
-  // function spawnPokemon(uint256 playerID) private {
-  //   // TODO: for now, give a bulbasaur; later, client can make selection
-  //   PokemonIndexComponent pokemonIndex = PokemonIndexComponent(getAddressById(components, PokemonIndexComponentID));
-  //   uint32 index = 1;
-  //   uint256 classID = pokemonIndex.getEntitiesWithValue(index)[0];
-  //   ObtainFirstPokemonSystem obtainFirstPokemon = ObtainFirstPokemonSystem(getAddressById(world.systems(), ObtainFirstPokemonSystemID));
-  //   obtainFirstPokemon.executeTyped(classID, playerID);
-  // }
 }

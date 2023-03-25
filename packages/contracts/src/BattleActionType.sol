@@ -9,6 +9,7 @@ enum BattleActionType {
   UsePokeball,
   UseStatsChanger,
   Switch,
-  Flee,
-  Skip
+  Escape,
+  Skip,
+  Encounter // TODO: a temporary patch to allow encounter to generate RNG
 }

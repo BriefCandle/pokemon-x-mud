@@ -2,51 +2,40 @@
 pragma solidity >=0.8.0;
 import { System, IWorld } from "solecs/System.sol";
 import { getAddressById, addressToEntity } from "solecs/utils.sol";
-import { PokemonInstanceComponent, ID as PokemonInstanceComponentID, PokemonInstance } from "../components/PokemonInstanceComponent.sol";
+import { IUint256Component } from "solecs/interfaces/IUint256Component.sol";
+
+import { BattleStats } from "../components/PokemonBattleStatsComponent.sol";
+
 import { PokemonEVComponent, ID as PokemonEVComponentID } from "../components/PokemonEVComponent.sol";
-import { BaseStatsComponent, ID as BaseStatsComponentID, PokemonStats } from "../components/BaseStatsComponent.sol";
-import { PokemonClassInfoComponent, ID as PokemonClassInfoComponentID } from "../components/PokemonClassInfoComponent.sol";
+
+import { PokemonClassInfo } from "../components/ClassInfoComponent.sol";
 import { StatusCondition } from "../StatusCondition.sol";
 import { LevelRate } from "../LevelRate.sol";
-import { PositionComponent, ID as PositionComponentID, Coord } from "../components/PositionComponent.sol";
-import { PlayerComponent, ID as PlayerComponentID } from "../components/PlayerComponent.sol";
 import { LibPokemon } from "../libraries/LibPokemon.sol";
+import { LibPokemonClass } from "../libraries/LibPokemonClass.sol";
+
+import { ID as ObtainFirstPokemonSystemID } from "./ObtainFirstPokemonSystem.sol";
+import { ID as CrawlSystemID } from "./CrawlSystem.sol";
+
 
 uint256 constant ID = uint256(keccak256("system.SpawnPokemon"));
 
-// spawn pokemon instance 
-// normally called by other system so that said instance 
-// can be owned or thrown into battle
+// spawn pokemon instance, to be called by other system 
 contract SpawnPokemonSystem is System { 
   constructor(IWorld _world, address _components) System(_world, _components) {  }
 
   function execute(bytes memory args) public returns (bytes memory) {
-    (uint256 classID, uint8 level) = abi.decode(args, (uint256, uint8));
-    return executeTyped(classID, level);
+    (uint32 index, uint32 level, uint256 pokemonID) = abi.decode(args, (uint32, uint32, uint256));
+    return executeTyped(index, level, pokemonID);
   }
 
-  function executeTyped(uint256 classID, uint8 level) public returns (bytes memory) {
-    uint256 pokemonID = world.getUniqueEntityId();
-
-    // get pokemon stats for max hp
-    BaseStatsComponent baseStats = BaseStatsComponent(getAddressById(components, BaseStatsComponentID));
-    PokemonStats memory stats = baseStats.getValue(classID);
-    
-    // level to exp
-    PokemonClassInfoComponent classInfoC = PokemonClassInfoComponent(getAddressById(components, PokemonClassInfoComponentID));
-    LevelRate levelRate = classInfoC.getValue(classID).levelRate;
-    uint32 exp = LibPokemon.levelToExp(levelRate, level);
-
-    // TODO: get move classIDs from pokemonclassIDs
-    uint256[4] memory moves = LibPokemon.getDefaultMoves(components, classID, level);
-
-    // instantiate pokemon 
-    PokemonInstanceComponent pokemonInstance = PokemonInstanceComponent(getAddressById(components, PokemonInstanceComponentID));
-    pokemonInstance.set(pokemonID, PokemonInstance(classID, moves[0], moves[1], moves[2], moves[3], 0, exp, level, uint32(stats.HP), StatusCondition.None, 0,0,0,0,0,0,0,0,0));
-
-    PokemonEVComponent pokemonEV = PokemonEVComponent(getAddressById(components, PokemonEVComponentID));
-    pokemonEV.set(pokemonID, PokemonStats(0,0,0,0,0,0));
-    return abi.encode(pokemonID);
+  // TODO: figure out how msg.sender works here
+  function executeTyped(uint32 index, uint32 level, uint256 pokemonID) public returns (bytes memory) {
+    // require(addressToEntity(msg.sender) == ObtainFirstPokemonSystemID ||
+    //   addressToEntity(msg.sender) == CrawlSystemID, "Spawn Pokemon: cannot spawn");
+    LibPokemon.spawnPokemon(components, pokemonID, index, level);
+    // return abi.encode(pokemonID);
   }
+
 }
   

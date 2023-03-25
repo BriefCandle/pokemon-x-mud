@@ -8,15 +8,17 @@ import { MoveTarget } from "../MoveTarget.sol";
 import { StatusCondition } from "../StatusCondition.sol";
  
 struct PokemonClassInfo {
-    uint32 catchRate;
+    uint16 catchRate;
     PokemonType type1;
     PokemonType type2;
     LevelRate levelRate;
 }
 
-uint256 constant ID = uint256(keccak256("component.PokemonClassInfo"));
+uint256 constant ID = uint256(keccak256("component.ClassInfo"));
 
-contract PokemonClassInfoComponent is Component {
+// pokemon classID -> PokemonClassInfo
+// TODO: rename it as ClassInfoComponent?
+contract ClassInfoComponent is Component {
   constructor(address world) Component(world, ID) {}
 
   function getSchema() public pure override returns (string[] memory keys, LibTypes.SchemaValue[] memory values) {

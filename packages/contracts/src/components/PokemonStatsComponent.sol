@@ -7,12 +7,12 @@ import { LibTypes } from "solecs/LibTypes.sol";
 // we stick with the original game where one byte (uint8) is used to store each value
 
 struct PokemonStats {
-    uint8 HP; // max health; H
-    uint8 ATK; // attack; A
-    uint8 DEF; // defence; B
-    uint8 SPATK; // special attack; C
-    uint8 SPDEF; // special defence; D
-    uint8 SPD; // speed; S
+    uint16 HP; // max health; H
+    uint16 ATK; // attack; A
+    uint16 DEF; // defence; B
+    uint16 SPATK; // special attack; C
+    uint16 SPDEF; // special defence; D
+    uint16 SPD; // speed; S
 }
 
 contract PokemonStatsComponent is Component {
@@ -23,22 +23,22 @@ contract PokemonStatsComponent is Component {
     values = new LibTypes.SchemaValue[](6);
 
     keys[0] = "HP";
-    values[0] = LibTypes.SchemaValue.UINT8;
+    values[0] = LibTypes.SchemaValue.UINT16;
 
     keys[1] = "ATK";
-    values[1] = LibTypes.SchemaValue.UINT8;
+    values[1] = LibTypes.SchemaValue.UINT16;
 
     keys[2] = "DEF";
-    values[2] = LibTypes.SchemaValue.UINT8;
+    values[2] = LibTypes.SchemaValue.UINT16;
 
     keys[3] = "SPATK";
-    values[3] = LibTypes.SchemaValue.UINT8;
+    values[3] = LibTypes.SchemaValue.UINT16;
 
     keys[4] = "SPDEF";
-    values[4] = LibTypes.SchemaValue.UINT8;
+    values[4] = LibTypes.SchemaValue.UINT16;
 
     keys[5] = "SPD";
-    values[5] = LibTypes.SchemaValue.UINT8;
+    values[5] = LibTypes.SchemaValue.UINT16;
   }
 
   function set(uint256 entity, PokemonStats calldata stats) public virtual {
