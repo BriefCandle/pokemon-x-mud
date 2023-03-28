@@ -12,6 +12,7 @@ import { TeamComponent, ID as TeamComponentID } from "../components/TeamComponen
 import { TeamPokemonsComponent, ID as TeamPokemonsComponentID } from "../components/TeamPokemonsComponent.sol";
 import { TeamBattleComponent, ID as TeamBattleComponentID } from "../components/TeamBattleComponent.sol";
 import { BattlePokemonsComponent, ID as BattlePokemonsComponentID } from "../components/BattlePokemonsComponent.sol";
+import { BattleActionTimestampComponent, ID as BattleActionTimestampComponentID, MAX_DURATION} from "../components/BattleActionTimestampComponent.sol";
 import { MoveEffectComponent, ID as MoveEffectComponentID, MoveEffect } from "../components/MoveEffectComponent.sol";
 import { MoveInfoComponent, ID as MoveInfoComponentID, MoveInfo } from "../components/MoveInfoComponent.sol";
 
@@ -39,10 +40,15 @@ library LibBattle {
   /** -------------------- Manage Battle Order ---------------------- */
   // if checkBattleOrder is false, we setBattleOrder(), and then we getBattleOrder();
   // else, we getBattleOrder(), which returns whichever pokemon goes first
+  
+  // note: also can use ActionTimestamp to track if battleID is deleted 
+  function isBattleIDExist(IUint256Component components, uint256 battleID) internal view returns(bool) {
+    return BattlePokemonsComponent(getAddressById(components, BattlePokemonsComponentID)).has(battleID);
+  }
 
   function isBattleOrderExist(IUint256Component components, uint256 battleID) internal view returns(bool ) {
     BattlePokemonsComponent battleOrderC = BattlePokemonsComponent(getAddressById(components, BattlePokemonsComponentID));
-    if (!battleOrderC.has(battleID)) return false;
+    if (!isBattleIDExist(components, battleID)) return false;
     else {
       uint256[] memory battleOrder = battleOrderC.getValue(battleID);
       if (battleOrder.length == 0) return false;
@@ -129,7 +135,26 @@ library LibBattle {
     }
   }
 
+  // --------------------------------
 
+  function getBattleActionTimestamp(IUint256Component components, uint256 battleID) internal view returns(uint256) {
+    return BattleActionTimestampComponent(getAddressById(components, BattleActionTimestampComponentID)).getValue(battleID);
+  }
+
+  function setBattleActionTimestamp(IUint256Component components, uint256 battleID, uint256 timestamp) internal {
+    BattleActionTimestampComponent(getAddressById(components, BattleActionTimestampComponentID)).set(
+      battleID, timestamp
+    );
+  }
+
+  function removeBattleActionTimestamp(IUint256Component components, uint256 battleID) internal {
+    BattleActionTimestampComponent(getAddressById(components, BattleActionTimestampComponentID)).remove(battleID);
+  }
+
+  function isTimeElapsed(IUint256Component components, uint256 battleID) internal view returns(bool) {
+    uint256 timestamp = getBattleActionTimestamp(components, battleID);
+    return (block.timestamp - timestamp) >= MAX_DURATION ? true : false;
+  }
 
   // ------------- getter for BattleTeam: teamID->battleID  --------------
 
@@ -148,6 +173,13 @@ library LibBattle {
 
   
   // ---------------------------
+  // note: assuming player always has teamID as only battleSystem's teamID would be removed after defeat
+  function isPlayerInBattle(IUint256Component components, uint256 playerID) internal view returns(bool) {
+    // check whether player has teamID; if not, return false; if yes, check battlID
+    uint256 teamID = LibTeam.playerIDToTeamID(components, playerID);
+    TeamBattleComponent teamBattle = TeamBattleComponent(getAddressById(components, TeamBattleComponentID));
+    return teamBattle.has(teamID);
+  }
 
   // playerID -(TeamC)-> teamID -(BattleTeamC) -> battleID
   function playerIDToBattleID(IUint256Component components, uint256 playerID) internal view returns (uint256 battleID) {

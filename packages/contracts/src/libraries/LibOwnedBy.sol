@@ -16,18 +16,23 @@ import { LibBattle } from "./LibBattle.sol";
 import { BattleStats } from "../components/PokemonBattleStatsComponent.sol";
 
 import { OwnedByComponent, ID as OwnedByComponentID } from "../components/OwnedByComponent.sol";
-import { MoveInfoComponent, ID as MoveInfoComponentID, MoveInfo } from "../components/MoveInfoComponent.sol";
-import { PokemonClassInfo } from "../components/ClassInfoComponent.sol";
+import { PokemonClassIDComponent, ID as PokemonClassIDComponentID } from "../components/PokemonClassIDComponent.sol";
 
 import { ID as EncounterTriggerComponentID } from "../components/EncounterTriggerComponent.sol";
 import { ID as PositionComponentID, Coord } from "../components/PositionComponent.sol";
 import { ID as ObstructionComponentID } from "../components/ObstructionComponent.sol";
 import { ID as PlayerComponentID } from "../components/PlayerComponent.sol";
 
-library LibMove { 
+library LibOwnedBy { 
   function entityIDToOwnerID(IUint256Component components, uint256 entityID) internal view returns(uint256 ownerID) {
     return OwnedByComponent(getAddressById(components, OwnedByComponentID)).getValue(entityID);
   }
+
+  function setOwner(IUint256Component components, uint256 entityID, uint256 playerID) internal returns(bool) {
+    OwnedByComponent(getAddressById(components, OwnedByComponentID)).set(
+      entityID, playerID
+    );
+  } 
 
   function isOwnedBy(IUint256Component components, uint256 entityID, uint256 playerID) internal view returns(bool) {
     OwnedByComponent ownedByComp = OwnedByComponent(getAddressById(components, OwnedByComponentID));
@@ -40,6 +45,13 @@ library LibMove {
     fragments[0] = WorldQueryFragment(QueryType.HasValue, ParcelCoordComponentID, abi.encode(coord));
     fragments[1] = WorldQueryFragment(QueryType.HasValue, OwnedByComponentID, abi.encode(playerID));
     return world.query(fragments).length == 0 ? false : true;
+  }
+
+  function getOwnedPokemon(IWorld world, uint256 playerID) internal view returns(uint256[] memory){
+    WorldQueryFragment[] memory fragments = new WorldQueryFragment[](2);
+    fragments[0] = WorldQueryFragment(QueryType.HasValue, OwnedByComponentID, abi.encode(playerID));
+    fragments[1] = WorldQueryFragment(QueryType.Has, PokemonClassIDComponentID, new bytes(0));
+    return world.query(fragments); 
   }
 }
 

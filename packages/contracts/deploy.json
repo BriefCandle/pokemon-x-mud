@@ -39,6 +39,7 @@
 
     "TeamBattleComponent",
     "BattlePokemonsComponent",
+    "BattleActionTimestampComponent",
 
     "RNGActionTypeComponent",
     "RNGPrecommitComponent",
@@ -103,18 +104,19 @@
     "TeamComponent",
     "TeamPokemonsComponent",
     "TeamBattleComponent",
-    "BattlePokemonsComponent"
+    "BattlePokemonsComponent",
+    "BattleActionTimestampComponent"
     ]},
     { "name": "BattleSystem",
     "writeAccess": [
       "BattlePokemonsComponent",
+      "BattleActionTimestampComponent",
       "RNGActionTypeComponent",
       "RNGPrecommitComponent",
       "RNGTargetComponent"
     ]},
     { "name": "ActionMoveSystem",
     "writeAccess": [
-      "BattlePokemonsComponent",
       "RNGActionTypeComponent",
       "RNGPrecommitComponent",
       "RNGTargetComponent",
@@ -123,7 +125,6 @@
     ]},
     { "name": "ActionPokeballSystem",
     "writeAccess": [
-      "BattlePokemonsComponent",
       "RNGActionTypeComponent",
       "RNGPrecommitComponent",
       "RNGTargetComponent",
@@ -131,7 +132,6 @@
     ]},
     { "name": "ActionEscapeSystem",
     "writeAccess": [
-      "BattlePokemonsComponent",
       "TeamBattleComponent",
       "RNGActionTypeComponent",
       "RNGPrecommitComponent",
@@ -142,7 +142,9 @@
     "writeAccess": [
       "TeamBattleComponent",
       "BattlePokemonsComponent",
-      "TeamComponent"
+      "BattleActionTimestampComponent",
+      "TeamComponent",
+      "PositionComponent"
     ]},
     { "name": "HandlePokemonDeadSystem",
     "writeAccess": [
@@ -156,6 +158,24 @@
     "writeAccess": [
       "DungeonLevelComponent",
       "DungeonPokemonsComponent"
+    ]},
+    { "name": "AssembleTeamSystem",
+    "writeAccess": [
+      "OwnedByComponent",
+      "TeamPokemonsComponent"
+    ]},
+    { "name": "GiftPokemonSystem",
+    "writeAccess": [
+      "OwnedByComponent",
+      "PokemonEVComponent",
+      "PokemonBattleStatsComponent",
+      "PokemonClassIDComponent",
+      "PokemonExpComponent",
+      "PokemonLevelComponent",
+      "PokemonMovesComponent",
+      "PokemonHPComponent",
+      "PokemonItemComponent",
+      "PokemonStatusComponent"
     ]}
   ]
 }

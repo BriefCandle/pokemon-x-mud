@@ -5,7 +5,8 @@ import { getAddressById, addressToEntity } from "solecs/utils.sol";
 
 import { OwnedByComponent, ID as OwnedByComponentID } from "../components/OwnedByComponent.sol";
 
-import { SpawnPokemonSystem, ID as SpawnPokemonSystemID } from "../systems/SpawnPokemonSystem.sol";
+import { SpawnPlayerSystem, ID as SpawnPlayerSystemID } from "./SpawnPlayerSystem.sol";
+import { SpawnPokemonSystem, ID as SpawnPokemonSystemID } from "./SpawnPokemonSystem.sol";
 
 import { LibTeam } from "../Libraries/LibTeam.sol";
 import { LibPokemon } from "../Libraries/LibPokemon.sol";
@@ -21,14 +22,17 @@ contract ObtainFirstPokemonSystem is System {
   constructor(IWorld _world, address _components) System(_world, _components) {}
 
   function execute(bytes memory args) public returns (bytes memory) {
-    (uint32 index) = abi.decode(args, (uint32));
-    return executeTyped(index);
+    (uint32 index, uint256 playerID) = abi.decode(args, (uint32, uint256));
+    return executeTyped(index, playerID);
   }
 
-  function executeTyped(uint32 index) public returns (bytes memory) {
-    uint256 playerID = addressToEntity(msg.sender);
+  function executeTyped(uint32 index, uint256 playerID) public returns (bytes memory) {
 
-    // TODO: player must NOT have pokemons in team
+    require(msg.sender == getAddressById(world.systems(), SpawnPlayerSystemID), "shall be called by SpawnPlayerSystem");
+
+    require(index==1 || index==4 || index==7, "must be the original");
+    
+    // because playerID is never removed, player would NOT have pokemons in team before
 
     // 1) spawn two pokemons of level 5
     uint32 level = 5;
@@ -36,15 +40,10 @@ contract ObtainFirstPokemonSystem is System {
     SpawnPokemonSystem(getAddressById(world.systems(), SpawnPokemonSystemID)).executeTyped(
       index, level, pokemonID1
     );
-    uint256 pokemonID2 = world.getUniqueEntityId();
-    SpawnPokemonSystem(getAddressById(world.systems(), SpawnPokemonSystemID)).executeTyped(
-      index, level, pokemonID2
-    );
 
     uint256[] memory pokemonIDs = new uint256[](team_size);
     pokemonIDs[0] = pokemonID1;
-    pokemonIDs[2] = pokemonID2;
-
+    
     // 2) setup team
     uint256 teamID = world.getUniqueEntityId();
     LibTeam.setupPokemonsToTeam(components, pokemonIDs, teamID, playerID);

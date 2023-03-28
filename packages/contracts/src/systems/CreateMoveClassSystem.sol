@@ -20,7 +20,7 @@ contract CreateMoveClassSystem is System {
   }
 
   function executeTyped(string memory name, MoveInfo memory info, MoveEffect memory effect) public returns (bytes memory) {
-    // need to write some authorization here
+    // TODO: need to write some authorization here
     uint256 entityID = world.getUniqueEntityId();
 
     MoveNameComponent nameComp = MoveNameComponent(getAddressById(components, MoveNameComponentID));

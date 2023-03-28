@@ -52,7 +52,7 @@ library LibRNG {
 
   function reveal(IUint256Component components, uint256 pokemonID, uint256 targetID, BattleActionType action) internal returns (uint256 randomness) {
     if (!isExist(components, pokemonID)) revert LibRNG__nonExistPrecommit();
-    if (!isExistActionType(components, pokemonID, action)) revert LibRNG__notExistActionType();
+    if (action != BattleActionType.Skip && !isExistActionType(components, pokemonID, action)) revert LibRNG__notExistActionType();
     if (!isExistTargetID(components, pokemonID, targetID)) revert LibRNG__notExistTargetID();
 
     uint256 precommit = getPrecommit(components, pokemonID);
@@ -109,12 +109,16 @@ library LibRNG {
   function isValid(uint256 precommit) internal view returns (bool) {
     return
       // past the precommitted-to-block
-      precommit < block.number &&
+      isPassWaitBlock(precommit) &&
       // and not too far past it because blockhash only works for 256 most recent blocks
       !isOverBlockLimit(precommit);
   }
 
   function isOverBlockLimit(uint256 precommit) internal view returns (bool) {
     return block.number > precommit + 256;
+  }
+
+  function isPassWaitBlock(uint256 precommit) internal view returns (bool) {
+    return precommit < block.number;
   }
 }

@@ -7,9 +7,11 @@ enum TerrainType {
   Gravel,
   Grass,
   Flower,
-  GrassTall,
-  TreeShort,
-  TreeTall,
+  GrassTall, // encounter
+  TreeShort, //obstruction
+  TreeTall, //obstruction
   Water,
-  Boulder
+  Boulder //obstruction
 }
+
+// levelCheck1: 10, 20, 30, 40, 50

@@ -42,13 +42,14 @@ contract ActionEscapeSystem is System {
 
       _handleTeamEscaped(battleID);
 
-      return new bytes(0);
+      // return new bytes(0);
     }
 
-    LibBattle.resetDonePokemon(components, battleID);
+    // LibBattle.resetDonePokemon(components, battleID);
   }
 
-  function isEscaped(uint256 attackerID, uint256 targetID, uint256 randomness) internal view returns(bool) {
+
+  function isEscaped(uint256 attackerID, uint256 targetID, uint256 randomness) internal pure returns(bool) {
     // TODO: LibPokemon.getEscapeRate(components, ...)
     uint16 escape_rate = 125;
     uint16 threshold = uint16(randomness % 256);

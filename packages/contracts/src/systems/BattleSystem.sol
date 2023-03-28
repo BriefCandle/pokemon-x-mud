@@ -29,53 +29,54 @@ contract BattleSystem is System {
     return executeTyped(pokemonID, targetID, action);
   }
 
-  // note: pokemonID is not a necessary input as what's next is determined
-  function executeTyped(uint256 pokemonID, uint256 targetID, BattleActionType action) public returns (bytes memory) {
-    uint256 playerID = addressToEntity(msg.sender);
-    uint256 battleID = LibBattle.playerIDToBattleID(components, playerID);
+  // 1) if pokemonNext's player is NOT battleSystemID, anyone can check last time action is executed, 
+  // if time has not elapsed, require commander, etc
+  // 2) else when next is battleSystmeID, anyone can call; if there is a commit, cannot reveal it before pass wait block
+  // note: pokemonID is not a necessary input as what's next is pre-determined
+  function executeTyped(uint256 battleID, uint256 targetID, BattleActionType action) public returns (bytes memory) {
+    
     uint256 pokemonNext = LibBattle.getBattleNextOrder(components, battleID);
 
-    // either 1) player can command the next pokemon, 
-    // or 2) it is a case of pve && BattleSystem can command the next pokemon
-    if (LibTeam.isPlayerTeamHasPokemonID(components, playerID, pokemonNext)) {
-      require(pokemonID == pokemonNext, "Battle: not yet its turn");
+    uint256 next_playerID = LibTeam.pokemonIDToPlayerID(components, pokemonNext);
+    if (next_playerID != ID) {
+      if (LibBattle.isTimeElapsed(components, battleID)) {
 
-      LibBattle.requireEnemyTeamHasTargetID(components, playerID, targetID); 
+        // note: skip will skip no matter LibRNG is committed 
+        _executeAction(pokemonNext, targetID, BattleActionType.Skip, battleID);
+        
+      } else {
+        uint256 playerID = addressToEntity(msg.sender);
+        require(playerID == next_playerID, "Battle: not your battle");
+        LibTeam.requirePlayerTeamHasPokemonID(components, playerID, pokemonNext); 
+        LibBattle.requireEnemyTeamHasTargetID(components, playerID, targetID); 
+        LibAction.requireActionAvailable(components, battleID, action);
 
-      LibAction.requireActionAvailable(components, battleID, action);
-
-      _executeAction(pokemonNext, targetID, action, battleID);
-
+        _executeAction(pokemonNext, targetID, action, battleID);
+      }
     } else {
-      BattleType battleType = LibBattle.getBattleType(components, battleID); 
-      require(battleType == BattleType.NPC || battleType == BattleType.Encounter, "Battle: not pve");
-      LibTeam.requirePlayerTeamHasPokemonID(components, ID, pokemonNext);
-
-      uint256 bot_attackerID = pokemonNext;
 
       // TODO: LibBot method to determine following parameters 
       uint256 bot_targetID = LibBattle.playerIDToEnemyPokemons(components, ID)[0];
-      BattleActionType bot_action = action;
+      BattleActionType bot_action = BattleActionType.Move0;
 
-      _executeAction(bot_attackerID, bot_targetID, bot_action, battleID);
-    }
-    
-    // note: battle order is initalized before a battle (ex., crawl's encounter)
-    // or after an action is revealed so that each round's start can get a new nextOrder
-    if (!LibBattle.isBattleOrderExist(components, battleID)) {
-      LibBattle.initBattleOrder(components, battleID);
+      if (LibRNG.isExist(components, pokemonNext)) {
+        uint256 precommit = LibRNG.getPrecommit(components, pokemonNext);
+        require(LibRNG.isPassWaitBlock(precommit), "Battle: bot has not passed wait block");
+      }
+
+      _executeAction(pokemonNext, bot_targetID, bot_action, battleID);
     }
   }
 
-  // 1) if there is no commit for this attackerID, then allow action of skip, or commit other actions
+  // 1) if there is no commit for this attackerID, then allow action to skip, or player can commit other actions
   // 2) if there is a commit, then need to reveal
+  // 3) if no commit, needs to handleBattleOrder when battleID still exist
   function _executeAction(uint256 attackerID, uint256 targetID, BattleActionType action, uint256 battleID) private {
     if (!LibRNG.isExist(components, attackerID)) {
       
       if (action == BattleActionType.Skip) {
         
-        LibBattle.resetDonePokemon(components, battleID);
-        return;
+        // LibBattle.resetDonePokemon(components, battleID);
       } else {
         
         LibRNG.commit(components, attackerID, action, targetID); 
@@ -83,34 +84,49 @@ contract BattleSystem is System {
       }
     } else {
 
-      if (LibAction.isActionMove(action)) {
+      uint256 randomness = LibRNG.reveal(components, attackerID, targetID, action);
 
-        uint256 randomness = LibRNG.reveal(components, attackerID, targetID, action);
+      if (LibAction.isActionMove(action)) {
 
         ActionMoveSystem(getAddressById(world.systems(), ActionMoveSystemID)).executeTyped(
           attackerID, targetID, action, battleID, randomness
         );
-        return;
       } else if (action == BattleActionType.UsePokeball) {
-
-        uint256 randomness = LibRNG.reveal(components, attackerID, targetID, action);
         
         ActionPokeballSystem(getAddressById(world.systems(), ActionPokeballSystemID)).executeTyped(
           attackerID, targetID, action, battleID, randomness
         );
-        return;
       } else if (action == BattleActionType.Escape) {
     
-        uint256 randomness = LibRNG.reveal(components, attackerID, targetID, action);
-
         ActionEscapeSystem(getAddressById(world.systems(), ActionEscapeSystemID)).executeTyped(
           attackerID, targetID, action, battleID, randomness
         );
-        return;
-      } else revert("BattleSystem: no action");
+      } else if (action == BattleActionType.Skip) {
+      }
+      else revert("BattleSystem: no action");
+    }
 
+    if (LibBattle.isBattleIDExist(components, battleID)) {
+      _handleBattleOrder(battleID);
     }
   }
+
+  // note: battle order is initalized before a battle (ex., crawl's encounter)
+  // or after an action is revealed so that each round's start can get a new nextOrder
+  function _handleBattleOrder(uint256 battleID) internal {
+    // reset next pokemon, which must exist because it is performed after action revealed;
+    LibBattle.resetDonePokemon(components, battleID);
+
+    // reset timestamp
+    LibBattle.setBattleActionTimestamp(components, battleID, block.timestamp);
+    
+    // if battlepokemons is empty, init it
+    if (!LibBattle.isBattleOrderExist(components, battleID)) {
+      LibBattle.initBattleOrder(components, battleID);
+    }
+  }
+
+
 
   // function _executeRNGAction(
   //   uint256 attackerID, uint256 targetID, BattleActionType action, uint256 battleID,
@@ -125,98 +141,6 @@ contract BattleSystem is System {
   //   }
   // }
 
-  // function moveAction(uint256 attackerID, uint256 targetID, BattleActionType action, uint256 battleID) internal {
-
-  //   uint8 moveNumber = LibAction.actionToMoveNumber(action);
-  //   uint256 moveID = LibPokemon.getMoves(components, attackerID)[moveNumber];
-
-  //   uint256 randomness = LibRNG.reveal(components, attackerID, targetID, action);
-
-  //   LibMove.executeMove(components, attackerID, targetID, moveID, randomness);
-
-  //   if (LibPokemon.isPokemonDead(components, targetID)){
-  //     uint256 teamID = LibTeam.pokemonIDToTeamID(components, targetID);
-  //     _handleDeadPokemon(targetID, teamID);
-
-  //     if (LibTeam.isTeamDefeat(components, teamID)) {
-  //       _handleTeamDefeat(teamID);
-  //       return;
-  //     }
-  //   }
-  //   LibBattle.resetDonePokemon(components, battleID);
-
-  // }
-
-
-  /** -------------------- Move Action ---------------------- */
-
-  // function _doMoveAction(uint256 attackerID, uint256 targetID, BattleActionType action, uint256 battleID) private {
-  //   if (!LibRNG.isExist(components, attackerID)) {
-
-  //     LibRNG.commit(components, attackerID, action, targetID); 
-  //   } else {
-
-  //     uint8 moveNumber = LibAction.actionToMoveNumber(action);
-  //     uint256 moveID = LibPokemon.getMoves(components, attackerID)[moveNumber];
-
-  //     uint256 randomness = LibRNG.reveal(components, attackerID, targetID, action);
-
-  //     LibMove.executeMove(components, attackerID, targetID, moveID, randomness);
-
-  //     if (LibPokemon.isPokemonDead(components, targetID)){
-  //       uint256 teamID = LibTeam.pokemonIDToTeamID(components, targetID);
-  //       _handleDeadPokemon(targetID, teamID);
-
-  //       if (LibTeam.isTeamDefeat(components, teamID)) {
-  //         _handleTeamDefeat(teamID);
-  //         return;
-  //       }
-  //     }
-  //     LibBattle.resetDonePokemon(components, battleID);
-  //   }
-  // }
-
-  /** -------------------- UsePokeball Action ---------------------- */
-
-  // function _doUsePokeballAction() private {
-
-  //   // commit
-  //   // reveal: check pokemon catchrate and determine catch result
-
-  //   // --- _handlePokemonCaught
-  //   // --- LibBattle.resetDonePokemon(components, battleID);
-
-  // }
-  
-
-  // /** -------------------- Handle dead pokemon from battle ---------------------- */
-
-  // function _handleDeadPokemon(uint256 pokemonID, uint256 teamID) private {
-  //   LibTeam.removePokemonFromTeamPokemons(components, pokemonID, teamID);
-
-  //   OwnedByComponent(getAddressById(components, OwnedByComponentID)).set(
-  //     pokemonID, addressToEntity(address(0))
-  //   );
-
-  //   uint256 battleID = LibBattle.teamIDToBattleID(components, teamID);
-  //   LibBattle.removePokemonFromBattleOrder(components, pokemonID, battleID);
-  // }
-
-  //   /** -------------------- Handle defeated team from battle ---------------------- */
-
-  // function _handleTeamDefeat(uint256 teamID) internal {
-  //   uint256 battleID = LibBattle.teamIDToBattleID(components, teamID);
-
-  //   // 1) remove BattleOrder
-  //   LibBattle.removeBattleOrder(components, battleID);
-
-  //   // 2) remove all teams from BattleTeam
-  //   LibBattle.removeAllBattleTeams(components, battleID);
-
-  //   // 3) remove defeat team
-  //   LibTeam.removeTeam(components, teamID);
-
-  // }
 
 
 

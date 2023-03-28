@@ -48,10 +48,10 @@ contract ActionMoveSystem is System {
         HandleTeamDefeatSystem(getAddressById(world.systems(), HandleTeamDefeatSystemID)).executeTyped(
           teamID
         );
-        return new bytes(0);
+        // return new bytes(0);
       }
     }
-    LibBattle.resetDonePokemon(components, battleID);
+    // LibBattle.resetDonePokemon(components, battleID);
 
   } 
 

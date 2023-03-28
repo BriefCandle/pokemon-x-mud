@@ -55,6 +55,7 @@ library LibTeam {
     }
   }
 
+  // assign it to an empty slot
   function assignPokemonToTeam(IUint256Component components, uint256 pokemonID, uint256 teamID) internal returns(bool) {
     uint256[] memory pokemonIDs = teamIDToPokemons(components, teamID);
     uint index = LibArray.getValueIndexInArray(0, pokemonIDs);

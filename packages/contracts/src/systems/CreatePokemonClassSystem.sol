@@ -25,7 +25,7 @@ contract CreatePokemonClassSystem is System {
   }
 
   function executeTyped(uint32 baseExp, PokemonStats memory bs, PokemonStats memory ev, PokemonClassInfo memory info, uint32 index) public returns (bytes memory) {
-    // need to write some authorization here
+    // TODO: need to write some authorization here
     uint256 entityID = world.getUniqueEntityId();
 
     ClassBaseExpComponent baseExpComp = ClassBaseExpComponent(getAddressById(components, ClassBaseExpComponentID));

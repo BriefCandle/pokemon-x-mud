@@ -29,10 +29,12 @@ contract SpawnPokemonSystem is System {
     return executeTyped(index, level, pokemonID);
   }
 
-  // TODO: figure out how msg.sender works here
   function executeTyped(uint32 index, uint32 level, uint256 pokemonID) public returns (bytes memory) {
-    // require(addressToEntity(msg.sender) == ObtainFirstPokemonSystemID ||
-    //   addressToEntity(msg.sender) == CrawlSystemID, "Spawn Pokemon: cannot spawn");
+    
+    require(msg.sender == getAddressById(world.systems(), ObtainFirstPokemonSystemID) ||
+            msg.sender == getAddressById(world.systems(), CrawlSystemID), 
+            "Spawn Pokemon: cannot spawn");
+
     LibPokemon.spawnPokemon(components, pokemonID, index, level);
     // return abi.encode(pokemonID);
   }

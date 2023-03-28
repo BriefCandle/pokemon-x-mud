@@ -53,4 +53,32 @@ library LibArray {
     return new_array;
   }
 
+  // relative complement of B w.r.t. A: i.e., elements of A that are not in B
+  function getRelativeComplement(uint[] memory array_a, uint[] memory array_b) internal pure returns (uint[] memory) {
+    uint[] memory result = new uint[](array_a.length);
+    uint index = 0;
+
+    for (uint i=0; i<array_a.length; i++) {
+        bool found = false;
+      for (uint j=0; j<array_b.length; j++) {
+        if (array_a[i] == array_b[j]) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        result[index] = array_a[i];
+        index++;
+      }
+    }
+    
+    // Trim the result array to the correct size
+    uint[] memory finalResult = new uint[](index);
+    for (uint k = 0; k < index; k++) {
+      finalResult[k] = result[k];
+    }
+        
+    return finalResult;
+  }
+
 }

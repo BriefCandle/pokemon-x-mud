@@ -37,10 +37,9 @@ contract CrawlSystem is System {
 
     PositionComponent position = PositionComponent(getAddressById(components, PositionComponentID));
     require(LibMap.distance(position.getValue(playerId), coord) == 1, "can only move to adjacent spaces");
-
-    // TODO: when in battle, cannot move
-    // EncounterComponent encounter = EncounterComponent(getAddressById(components, EncounterComponentID));
-    // require(!encounter.has(entityId), "cannot move during an encounter");
+    
+    // note: it assume player has teamID; revert otherwise
+    require(!LibBattle.isPlayerInBattle(components, playerId), "cannot move during a battle");
 
     require(LibMap.obstructions(world, coord).length == 0, "this space is obstructed");
     require(LibMap.players(world, coord).length == 0, "this space has player");
@@ -48,8 +47,9 @@ contract CrawlSystem is System {
     position.set(playerId, coord);
 
     if (LibMap.encounterTriggers(world, coord).length > 0) {
-      // TODO: requires a team from playerID
+      
       require(LibTeam.playerIDToTeamPokemonIDs(components, playerId).length != 0, "no team pokemons");
+      
       // TODO: use a random number to get encounterTrigger & pokemon index from array
       // 20% chance to trigger encounter
       uint256 rand = uint256(keccak256(abi.encode(++entropyNonce, playerId, coord, block.difficulty)));
@@ -86,6 +86,10 @@ contract CrawlSystem is System {
 
     // 4) init battle order
     LibBattle.initBattleOrder(components, battleID);
+
+    // 5) init battle action timestamp
+    LibBattle.setBattleActionTimestamp(components, battleID, block.timestamp);
+
   }
 
 

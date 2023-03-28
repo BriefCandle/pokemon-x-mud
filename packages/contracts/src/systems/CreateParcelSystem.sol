@@ -27,7 +27,7 @@ contract CreateParcelSystem is System {
   }
 
   function executeTyped(int32 x_p, int32 y_p, bytes memory terrainMap) public returns (bytes memory) {
-    // need to write some authorization here
+    // TODO: need to write some authorization here
 
     uint256 parcelID = world.getUniqueEntityId();
     ParcelComponent pComp = ParcelComponent(getAddressById(components, ParcelComponentID));
