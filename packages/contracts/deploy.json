@@ -28,6 +28,11 @@
     "ParcelComponent",
     "ParcelCoordComponent",
 
+    "TerrainNurseComponent",
+    "TerrainPCComponent",
+    "TerrainSpawnComponent",
+    "LevelCheckComponent",
+
     "DungeonLevelComponent",
     "DungeonPokemonsComponent",
 
@@ -83,7 +88,11 @@
       "ParcelComponent",
       "ParcelCoordComponent",
       "ObstructionComponent",
-      "EncounterTriggerComponent"
+      "EncounterTriggerComponent",
+      "TerrainNurseComponent",
+      "TerrainPCComponent",
+      "TerrainSpawnComponent",
+      "LevelCheckComponent"
     ]},
     { "name": "SpawnPlayerSystem",
       "writeAccess": [
@@ -163,6 +172,14 @@
     "writeAccess": [
       "OwnedByComponent",
       "TeamPokemonsComponent"
+    ]},    
+    { "name": "AssembleOldTeamSystem",
+    "writeAccess": [
+      "TeamPokemonsComponent"
+    ]},
+    { "name": "RestoreTeamHPSystem",
+    "writeAccess": [
+      "PokemonHPComponent"
     ]},
     { "name": "GiftPokemonSystem",
     "writeAccess": [

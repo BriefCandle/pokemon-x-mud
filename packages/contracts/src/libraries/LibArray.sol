@@ -81,4 +81,31 @@ library LibArray {
     return finalResult;
   }
 
+  // compare two arrays with same elements, not necessarily in the same order
+  function compareArrays(uint[] memory array1, uint[] memory array2) public pure returns (bool) {
+    if (array1.length != array2.length) return false;
+
+    uint[] memory array2Copy = new uint[](array2.length);
+      for (uint i = 0; i < array2.length; i++) {
+        array2Copy[i] = array2[i];
+      }
+        
+      for (uint i = 0; i < array1.length; i++) {
+        bool found = false;
+        for (uint j = 0; j < array2Copy.length; j++) {
+          if (array1[i] == array2Copy[j]) {
+            found = true;
+            delete array2Copy[j];
+            break;
+          }
+        }
+        
+        if (!found) {
+          return false;
+        }
+      }
+        
+    return true;
+  }
+
 }

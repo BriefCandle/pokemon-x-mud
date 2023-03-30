@@ -1,6 +1,22 @@
 # Roguelike X MUD
 
 # Overview
+Building RPG game mechanisms with the Pokemon gen II as the first demo.  
+
+Basic Gameplay Mechanisms:
+- Players need to assemble a pokemon team (up to 4 members) to crawl through various dungeons where they can level up owned pokemons, catch new pokemon, get item rewards, and/or face PvP battle.
+- Battle is turn-based (if a player purposefully delays a transaction, anyone may call the default move on him, which is skip a turn) with a commit-and-reveal RNG to determine critical damage.
+- There are safe zone where PvP battle is not allowed, and players get to heal up their pokemons, re-assemble a team, and other logistics activities.   
+
+I am picturing it to be a community-owned project:
+- Map-wise, it is up to players themselves to add on new parcels, build new maps, and set up new dungeons for other players to be crawled on.
+- Hero characters and attack move -wise, it is also up to players to make them.
+- Besides, by registering new systems on world, new features can be implemented on top of the old ones. 
+
+Schedule:
+- About to complete smart contract this week. Migrate to mud v2 next week. And complete client-side work after that.
+
+# Comments on RPG
 An RPG is a game genre involving players strategically collecting and managing in-game elements (characters, equipment, skills, buffs, etc.). Players’ game goal is realized through "battling", in which players properly "stack" the stats of their in-game elements so as to achieve an optimized battling outcome. A feedback loop is then established by rewarding in-game tokens (exp, crystal, and etc.) after battling or completing other in-game activities, which can then be used to upgrade in-game elements, i.e., improving their stats. Therefore, an RPG concerns with two main mechanisms: 1) categorization of in-game elements, and 2) interactions among in-game elements (battling, upgrading, and etc.)
 
 We categorize an RPG game to have 4 essential elements:
@@ -12,7 +28,7 @@ We categorize an RPG game to have 4 essential elements:
 We are building the classic Pokemon Gen 2 (Gold/Silver/Crystal) to demonstrate our understanding of the RPG genre with the following features to implement:
 1) **Separation between instances and classes** of RPG characters and ownable entities, thereby separating game builders and game players in a decentralization spirit
 2) **Categorization of rights and authorization**, thereby allowing gameplay concepts to be built on each other in a hierachical and parallel order
-3) **Experiment on turn-based team battle mechanisms**  
+3) **Turn-based team battle mechanisms**  
 
 We aim to learn from building this project so that we can rapid-prototyping other future RPG games. More importantly, we want to create an RPG world where different RPG games can share assets and gameplay and allow players to play across games. 
 
@@ -152,7 +168,12 @@ Interacting with respawn point would allow player later to respawn to its parcel
 RespawnComponent
 
 ## PvP Mechanism
-Players need to agree to fight to death. Disagreeing comes with a price of being deleted on position.
+Players need to agree to fight to death. Disagreeing comes with a price of being removed on position.
+`BattleOfferComponent`: attacker playerID -> target playerID; when offer being made, neither party can move 
+`BattleOfferTimestampComponent`: attacker playerID -> timestamp; if timestamp passes, anyone can call default action
+
+## Smarter Bot
+Bot could give priority to attack weaker, similar level, and more valuable pokemon. Bot could also precompute type effectiveness and make attack decision accordingly
 
 ## Summon Dead Pokemon 
 allow original owner to summon dead pokemon from a specific parcelID  

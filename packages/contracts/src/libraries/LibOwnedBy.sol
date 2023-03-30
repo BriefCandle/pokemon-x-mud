@@ -20,7 +20,6 @@ import { PokemonClassIDComponent, ID as PokemonClassIDComponentID } from "../com
 
 import { ID as EncounterTriggerComponentID } from "../components/EncounterTriggerComponent.sol";
 import { ID as PositionComponentID, Coord } from "../components/PositionComponent.sol";
-import { ID as ObstructionComponentID } from "../components/ObstructionComponent.sol";
 import { ID as PlayerComponentID } from "../components/PlayerComponent.sol";
 
 library LibOwnedBy { 

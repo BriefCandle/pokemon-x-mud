@@ -12,6 +12,7 @@ import { EncounterTriggerComponent, ID as EncounterTriggerComponentID } from "..
 import { ParcelCoordComponent, ID as ParcelCoordComponentID} from "../components/ParcelCoordComponent.sol";
 import { ParcelComponent, ID as ParcelComponentID, Parcel, parcelWidth, parcelHeight } from "../components/ParcelComponent.sol";
 
+import { LibMap } from "../libraries/LibMap.sol";
 
 uint256 constant ID = uint256(keccak256("system.CreateParcel"));
 
@@ -36,12 +37,6 @@ contract CreateParcelSystem is System {
     ParcelCoordComponent pcComp = ParcelCoordComponent(getAddressById(components, ParcelCoordComponentID));
     pcComp.set(parcelID, Coord(x_p, y_p));
 
-    PositionComponent position = PositionComponent(getAddressById(components, PositionComponentID));
-    ObstructionComponent obstruction = ObstructionComponent(getAddressById(components, ObstructionComponentID));
-    EncounterTriggerComponent encounterTrigger = EncounterTriggerComponent(
-      getAddressById(components, EncounterTriggerComponentID)
-    );
-
     int32 xOffset = int32(parcelWidth) * x_p;
     int32 yOffset = int32(parcelHeight) * y_p;
     
@@ -51,22 +46,58 @@ contract CreateParcelSystem is System {
         int32 y = int32(j) + yOffset;
         // convert byte to enum
         TerrainType terrainType = TerrainType(uint8(terrainMap[(j * parcelWidth) + i]));
+
+        // normal terrain
         if (terrainType == TerrainType.Path || 
             terrainType == TerrainType.Gravel ||
             terrainType == TerrainType.Grass ||
             terrainType == TerrainType.Flower) continue;
         
         uint256 positionID = world.getUniqueEntityId();
-        position.set(positionID, Coord(x, y));
+        LibMap.setPosition(components, positionID, Coord(x, y));
+
+        // encounter  
+        if (terrainType == TerrainType.GrassTall) {
+          LibMap.setEncounterTrigger(components, positionID);
+          continue;
+        }
+
+        // normal obstruction
         if (terrainType == TerrainType.Boulder ||
             terrainType == TerrainType.TreeShort ||
             terrainType == TerrainType.TreeTall
         ) {
-          obstruction.set(positionID);
-        } else if (terrainType == TerrainType.GrassTall
-        ) {
-          encounterTrigger.set(positionID);
+          LibMap.setObstruction(components, positionID);
+          continue;
+        } 
+        
+        // special obstruction - nurse
+        if (terrainType == TerrainType.Nurse) {
+          LibMap.setObstruction(components, positionID);
+          LibMap.setNurse(components, positionID);
+          continue;
         }
+
+        // special obstruction - PC
+        if (terrainType == TerrainType.PC) {
+          LibMap.setObstruction(components, positionID);
+          LibMap.setPC(components, positionID);
+          continue;
+        }
+
+        // special obstruction - Spawn
+        if (terrainType == TerrainType.Spawn) {
+          LibMap.setObstruction(components, positionID);
+          LibMap.setSpawn(components, positionID);
+          continue;
+        }
+
+        // level check
+        if (LibMap.isLevelCheck(terrainType)) {
+          uint32 level = LibMap.levelCheckEnumToUint32(terrainType);
+          LibMap.setLevelCheck(components, positionID, level);
+        }
+
       }
     }
 

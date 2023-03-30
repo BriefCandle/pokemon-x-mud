@@ -5,15 +5,21 @@ import { IWorld, WorldQueryFragment } from "solecs/World.sol";
 import { IUint256Component } from "solecs/interfaces/IUint256Component.sol";
 import { getAddressById } from "solecs/utils.sol";
 
-import { ID as EncounterTriggerComponentID } from "../components/EncounterTriggerComponent.sol";
+import { EncounterTriggerComponent, ID as EncounterTriggerComponentID } from "../components/EncounterTriggerComponent.sol";
 import { PositionComponent, ID as PositionComponentID, Coord } from "../components/PositionComponent.sol";
-import { ID as ObstructionComponentID } from "../components/ObstructionComponent.sol";
+import { ObstructionComponent, ID as ObstructionComponentID } from "../components/ObstructionComponent.sol";
+import { LevelCheckComponent, ID as LevelCheckComponentID } from "../components/LevelCheckComponent.sol";
+import { TerrainNurseComponent, ID as TerrainNurseComponentID } from "../components/TerrainNurseComponent.sol";
+import { TerrainPCComponent, ID as TerrainPCComponentID } from "../components/TerrainPCComponent.sol";
+import { TerrainSpawnComponent, ID as TerrainSpawnComponentID } from "../components/TerrainSpawnComponent.sol";
+
 import { ID as PlayerComponentID } from "../components/PlayerComponent.sol";
 import { parcelWidth, parcelHeight } from "../components/ParcelComponent.sol";
 import { ParcelCoordComponent, ID as ParcelCoordComponentID } from "../components/ParcelCoordComponent.sol";
 import { DungeonLevelComponent, ID as DungeonLevelComponentID } from "../components/DungeonLevelComponent.sol";
 import { DungeonPokemonsComponent, ID as DungeonPokemonsComponentID } from "../components/DungeonPokemonsComponent.sol";
 
+import {TerrainType} from "../TerrainType.sol";
 
 library LibMap {
   function distance(Coord memory from, Coord memory to) internal pure returns (int32) {
@@ -42,6 +48,84 @@ library LibMap {
     fragments[1] = WorldQueryFragment(QueryType.Has, PlayerComponentID, new bytes(0));
     return world.query(fragments);
   }
+
+  function levelChecks(IWorld world, Coord memory coord) internal view returns (uint256[] memory) {
+    WorldQueryFragment[] memory fragments = new WorldQueryFragment[](2);
+    fragments[0] = WorldQueryFragment(QueryType.HasValue, PositionComponentID, abi.encode(coord));
+    fragments[1] = WorldQueryFragment(QueryType.Has, LevelCheckComponentID, new bytes(0));
+    return world.query(fragments);
+  }
+
+  function nurses(IWorld world, Coord memory coord) internal view returns (uint256[] memory) {
+    WorldQueryFragment[] memory fragments = new WorldQueryFragment[](2);
+    fragments[0] = WorldQueryFragment(QueryType.HasValue, PositionComponentID, abi.encode(coord));
+    fragments[1] = WorldQueryFragment(QueryType.Has, TerrainNurseComponentID, new bytes(0));
+    return world.query(fragments);
+  }
+
+  function PCs(IWorld world, Coord memory coord) internal view returns (uint256[] memory) {
+    WorldQueryFragment[] memory fragments = new WorldQueryFragment[](2);
+    fragments[0] = WorldQueryFragment(QueryType.HasValue, PositionComponentID, abi.encode(coord));
+    fragments[1] = WorldQueryFragment(QueryType.Has, TerrainPCComponentID, new bytes(0));
+    return world.query(fragments);
+  }
+
+  function spawns(IWorld world, Coord memory coord) internal view returns (uint256[] memory) {
+    WorldQueryFragment[] memory fragments = new WorldQueryFragment[](2);
+    fragments[0] = WorldQueryFragment(QueryType.HasValue, PositionComponentID, abi.encode(coord));
+    fragments[1] = WorldQueryFragment(QueryType.Has, TerrainSpawnComponentID, new bytes(0));
+    return world.query(fragments);
+  }
+
+  function setObstruction(IUint256Component components, uint256 entityID) internal {
+    ObstructionComponent(getAddressById(components, ObstructionComponentID)).set(entityID);
+  }
+
+  function setEncounterTrigger(IUint256Component components, uint256 entityID) internal {
+    EncounterTriggerComponent(getAddressById(components, EncounterTriggerComponentID)).set(entityID);
+  }
+
+  function setLevelCheck(IUint256Component components, uint256 entityID, uint32 level) internal {
+    LevelCheckComponent(getAddressById(components, LevelCheckComponentID)).set(entityID, level);
+  }
+
+  function isLevelCheck(TerrainType terrainType) internal pure returns (bool) {
+    return (terrainType == TerrainType.LevelCheck1 || terrainType == TerrainType.LevelCheck2 ||
+    terrainType == TerrainType.LevelCheck3 || terrainType == TerrainType.LevelCheck4 ||
+    terrainType == TerrainType.LevelCheck5) ? true : false;
+  }
+
+  function levelCheckEnumToUint32(TerrainType terrainType) internal pure returns (uint32) {
+    if (terrainType == TerrainType.LevelCheck1) return 10;
+    if (terrainType == TerrainType.LevelCheck2) return 20;
+    if (terrainType == TerrainType.LevelCheck3) return 30;
+    if (terrainType == TerrainType.LevelCheck4) return 40;
+    if (terrainType == TerrainType.LevelCheck5) return 50;
+    return 0;
+  }
+
+  function getLevelCheck(IUint256Component components, uint256 entityID) internal view returns (uint32) {
+    return LevelCheckComponent(getAddressById(components, LevelCheckComponentID)).getValue(entityID);
+  }
+
+  function setNurse(IUint256Component components, uint256 entityID) internal {
+    TerrainNurseComponent(getAddressById(components, TerrainNurseComponentID)).set(entityID);
+  }
+
+  function setPC(IUint256Component components, uint256 entityID) internal {
+    TerrainPCComponent(getAddressById(components, TerrainPCComponentID)).set(entityID);
+  }
+
+  function setSpawn(IUint256Component components, uint256 entityID) internal {
+    TerrainSpawnComponent(getAddressById(components, TerrainSpawnComponentID)).set(entityID);
+  }
+
+
+
+  
+
+
+
 
   function setPosition(IUint256Component components, uint256 entityID, Coord memory coord) internal {
     PositionComponent(getAddressById(components, PositionComponentID)).set(entityID, coord);

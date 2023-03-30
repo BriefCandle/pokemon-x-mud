@@ -2,10 +2,14 @@
 pragma solidity >=0.8.0;
 import { System, IWorld } from "solecs/System.sol";
 import { getAddressById, addressToEntity } from "solecs/utils.sol";
+
+import { Coord } from "../components/PositionComponent.sol";
+
 import { LibTeam } from "../libraries/LibTeam.sol";
 import { LibBattle } from "../libraries/LibBattle.sol";
 import { LibArray } from "../libraries/LibArray.sol";
 import { LibOwnedBy } from "../libraries/LibOwnedBy.sol";
+import { LibMap } from "../libraries/LibMap.sol";
 
 
 uint256 constant ID = uint256(keccak256("system.AssembleTeam"));
@@ -15,14 +19,17 @@ contract AssembleTeamSystem is System {
   constructor(IWorld _world, address _components) System(_world, _components) { }
 
   function execute(bytes memory args) public returns (bytes memory) {
-    (uint256[] memory pokemonIDs) = abi.decode(args, (uint256[]));
-    return executeTyped(pokemonIDs);
+    (uint256[] memory pokemonIDs, Coord memory coord) = abi.decode(args, (uint256[], Coord));
+    return executeTyped(pokemonIDs, coord);
   }
 
-  function executeTyped(uint256[] memory pokemonIDs) public returns (bytes memory) { 
+  function executeTyped(uint256[] memory pokemonIDs, Coord memory coord) public returns (bytes memory) { 
     uint256 playerID = addressToEntity(msg.sender);
     
-    // TODO: cannot assemble when in dungeon
+    // require PC is adjacent to player at coord
+    require(LibMap.distance(LibMap.getPosition(components, playerID), coord) == 1, "PC not in adjacent space");
+    require(LibMap.PCs(world, coord).length > 0, "PC not in coord");
+
     require(pokemonIDs.length == 4, "Assemble Team: team length is not 4");
     require(!LibBattle.isPlayerInBattle(components, playerID), "Player is in battle");
     uint256[] memory pokemonIDs_no_zero = LibArray.filterZeroOffArray(pokemonIDs);

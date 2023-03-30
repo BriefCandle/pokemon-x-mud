@@ -6,6 +6,12 @@ import "std-contracts/test/MudTest.t.sol";
 import { getAddressById, addressToEntity } from "solecs/utils.sol";
 
 import { LibMap } from "../libraries/LibMap.sol";
+import { LibBattle } from "../libraries/LibBattle.sol";
+import { LibTeam } from "../libraries/LibTeam.sol";
+import { LibRNG } from "../libraries/LibRNG.sol";
+import { LibArray } from "../libraries/LibArray.sol";
+import { LibPokemon } from "../libraries/LibPokemon.sol";
+
 
 import { BattleActionType } from "../BattleActionType.sol";
 import { PokemonStats } from "../components/PokemonStatsComponent.sol";
@@ -31,7 +37,7 @@ import { CrawlSystem, ID as CrawlSystemID } from "../systems/CrawlSystem.sol";
 import { BattleSystem, ID as BattleSystemID } from "../systems/BattleSystem.sol";
 import { GiftPokemonSystem, ID as GiftPokemonSystemID } from "../systems/GiftPokemonSystem.sol";
 import { AssembleTeamSystem, ID as AssembleTeamSystemID } from "../systems/AssembleTeamSystem.sol";
-
+import { RestoreTeamHPSystem, ID as RestoreTeamHPSystemID } from "../systems/RestoreTeamHPSystem.sol";
 
 import { ID as PositionComponentID, Coord } from "../components/PositionComponent.sol";
 import { MoveNameComponent, ID as MoveNameComponentID } from "../components/MoveNameComponent.sol";
@@ -43,6 +49,7 @@ contract PokemonTest is MudTest {
   CrawlSystem crawlSystem;
   GiftPokemonSystem giftPokemonSystem;
   AssembleTeamSystem assembleTeamSystem;
+  RestoreTeamHPSystem restoreTeamHPSystem;
 
   // when inherit: constructor() PokemonTest(new Deploy()) {}
   constructor(IDeploy deploy) MudTest(deploy) {}
@@ -53,6 +60,7 @@ contract PokemonTest is MudTest {
     crawlSystem = CrawlSystem(system(CrawlSystemID));
     giftPokemonSystem = GiftPokemonSystem(system(GiftPokemonSystemID));
     assembleTeamSystem = AssembleTeamSystem(system(AssembleTeamSystemID));
+    restoreTeamHPSystem = RestoreTeamHPSystem(system(RestoreTeamHPSystemID));
   }
 
   bytes zero = abi.encode(0);
@@ -173,13 +181,18 @@ contract PokemonTest is MudTest {
   function createParcel() internal {
     int32 x_p = 0;
     int32 y_p = 0;
-    TerrainType L = TerrainType.GrassTall;
+    TerrainType G = TerrainType.Grass;
+    TerrainType T = TerrainType.GrassTall;
+    TerrainType N = TerrainType.Nurse;
+    TerrainType P = TerrainType.PC;
+    TerrainType L = TerrainType.LevelCheck1;
+    TerrainType S = TerrainType.Spawn;
     TerrainType[parcelHeight][parcelWidth] memory map = [
-      [L, L, L, L, L],
-      [L, L, L, L, L],
-      [L, L, L, L, L],
-      [L, L, L, L, L],
-      [L, L, L, L, L]
+      [G, G, G, G, S],
+      [G, G, G, G, N],
+      [G, G, G, G, P],
+      [T, T, T, L, L],
+      [T, T, T, L, L]
     ];
     bytes memory terrain = new bytes(parcelWidth * parcelHeight);
     for (uint32 j=0; j<parcelHeight; j++) {
@@ -195,7 +208,7 @@ contract PokemonTest is MudTest {
   function createDungeon() internal {
     Coord memory parcel_coord = Coord(0,0);
     uint256 parcelID = LibMap.parcelID(world, parcel_coord)[0];
-    console.log("parcelID", parcelID);
+    console.log(parcelID, "parcel created into dungeon");
     uint32 level= 5;
     uint32[] memory indexes = new uint32[](1);
     indexes[0] = 1;
@@ -215,8 +228,8 @@ contract PokemonTest is MudTest {
     setupPokemon();
     createParcel();
     createDungeon();
-    spawnPlayer(1, alice);
-    spawnPlayer(1, bob);
+    // spawnPlayer(1, alice);
+    // spawnPlayer(1, bob);
   }
 
 
@@ -238,8 +251,36 @@ contract PokemonTest is MudTest {
     return abi.decode(giftPokemonSystem.executeTyped(index, level, playerID), (uint256));
   }
 
-  function executeAssembleTeam(uint256[] memory pokemonIDs, address player) prank(player) internal {
-    assembleTeamSystem.executeTyped(pokemonIDs);
+  function executeAssembleTeam(uint256[] memory pokemonIDs, Coord memory coord, address player) prank(player) internal {
+    assembleTeamSystem.executeTyped(pokemonIDs, coord);
+  }
+
+  function autoPvEBattle(uint256 battleID, address player) internal {
+    uint256 playerID = addressToEntity(player);
+    uint256 nextPokemon;
+    uint256[] memory playerPokemonIDs;
+    uint256 targetID;
+    console.log("--------- Encounter Attack Begins ---------");   
+    while(LibBattle.isBattleOrderExist(components, battleID)) {
+      nextPokemon = LibBattle.getBattleNextOrder(components, battleID);
+      playerPokemonIDs = LibTeam.playerIDToTeamPokemonIDs(components, playerID);
+      if (LibArray.isValueInArray(nextPokemon, playerPokemonIDs)) {
+        targetID = LibBattle.playerIDToEnemyPokemons(components, playerID)[0];
+      } else {
+        targetID = LibBattle.playerIDToEnemyPokemons(components, BattleSystemID)[0];
+      }
+      executeBattle(battleID, targetID, BattleActionType.Move0, alice); 
+      vm.roll(block.number + LibRNG.WAIT_BLOCKS + 1);
+      executeBattle(battleID, targetID, BattleActionType.Move0, alice); 
+      console.log(targetID, "HP: ", LibPokemon.getHP(components, targetID));
+    }
+    console.log("--------- Encounter Attack Ends ---------");   
+    uint256[] memory team_pokemons = LibTeam.playerIDToTeamPokemonIDs(components, playerID);
+    logArray(team_pokemons, "alice pokemon");
+  }
+
+  function executeRestoreTeamHP(Coord memory coord, address player) prank(player) internal {
+    restoreTeamHPSystem.executeTyped(coord);
   }
 
 }

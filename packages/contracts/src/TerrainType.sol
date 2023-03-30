@@ -7,11 +7,17 @@ enum TerrainType {
   Gravel,
   Grass,
   Flower,
-  GrassTall, // encounter
-  TreeShort, //obstruction
-  TreeTall, //obstruction
+  GrassTall,    // encounter
+  TreeShort,    // obstruction
+  TreeTall,     // obstruction
   Water,
-  Boulder //obstruction
+  Boulder,      // obstruction
+  Nurse,        // nurse, obstruction
+  PC,           // PC, obstruction
+  Spawn,        // Spawn, obstruction
+  LevelCheck1,  // 10
+  LevelCheck2,  // 20
+  LevelCheck3,  // 30
+  LevelCheck4,  // 30
+  LevelCheck5   // 30
 }
-
-// levelCheck1: 10, 20, 30, 40, 50

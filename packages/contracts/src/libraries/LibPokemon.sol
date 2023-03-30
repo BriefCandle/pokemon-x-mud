@@ -76,6 +76,14 @@ library LibPokemon {
     return (2 * uint16(baseStats.HP) + uint16(evStats.HP)/4) * uint16(level) / 100 + uint16(level) + 10;
   }
 
+  function getPokemonIDMaxHP(IUint256Component components, uint256 pokemonID) internal view returns(uint16) {
+    uint256 classID = getClassID(components, pokemonID);
+    uint16 baseStats_HP = LibPokemonClass.getBaseStats(components, classID).HP;
+    uint16 evStats_HP = LibPokemon.getEV(components, pokemonID).HP;
+    uint32 level = LibPokemon.getLevel(components, pokemonID);
+    return (2 * baseStats_HP + evStats_HP / 4) * uint16(level) / 100 + uint16(level) + 10;
+  }
+
   // -------- getter: pokemonID -> pokemon instance ------------
   function getEV(IUint256Component components, uint256 pokemonID) internal view returns(PokemonStats memory ev){
     return PokemonEVComponent(getAddressById(components, PokemonEVComponentID)).getValue(pokemonID);
