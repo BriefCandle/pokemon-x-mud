@@ -6,6 +6,7 @@ Building RPG game mechanisms with the Pokemon gen II as the first demo.
 Basic Gameplay Mechanisms:
 - Players need to assemble a pokemon team (up to 4 members) to crawl through various dungeons where they can level up owned pokemons, catch new pokemon, get item rewards, and/or face PvP battle.
 - Battle is turn-based (if a player purposefully delays a transaction, anyone may call the default move on him, which is skip a turn) with a commit-and-reveal RNG to determine critical damage.
+- When a pokemon dies in battle, its ownership is transferred to dungeon where it dies. Future work can be done to either allow original owner to summon it back or exterminate ghost pokemon. 
 - There are safe zone where PvP battle is not allowed, and players get to heal up their pokemons, re-assemble a team, and other logistics activities.   
 
 I am picturing it to be a community-owned project:
@@ -14,7 +15,7 @@ I am picturing it to be a community-owned project:
 - Besides, by registering new systems on world, new features can be implemented on top of the old ones. 
 
 Schedule:
-- About to complete smart contract this week. Migrate to mud v2 next week. And complete client-side work after that.
+- About to complete smart contracts. Migrate to mud v2 next week. And complete client-side work after that.
 
 # Comments on RPG
 An RPG is a game genre involving players strategically collecting and managing in-game elements (characters, equipment, skills, buffs, etc.). Players’ game goal is realized through "battling", in which players properly "stack" the stats of their in-game elements so as to achieve an optimized battling outcome. A feedback loop is then established by rewarding in-game tokens (exp, crystal, and etc.) after battling or completing other in-game activities, which can then be used to upgrade in-game elements, i.e., improving their stats. Therefore, an RPG concerns with two main mechanisms: 1) categorization of in-game elements, and 2) interactions among in-game elements (battling, upgrading, and etc.)
@@ -158,7 +159,7 @@ The player now owns the team he created. There are then team-specific ownership 
 
 The benefit of defining rights and authorization is to allow concepts to be built on each other in a hierachical and parallel order. 
 
-# Features To Be Added  
+# Features Added  
 
 ## Dungeon Level Entry Requirement, or level bar
 A player cannot enter if any of his pokemon level is higher than the level bar. 
@@ -166,6 +167,11 @@ A player cannot enter if any of his pokemon level is higher than the level bar.
 ## Respawn
 Interacting with respawn point would allow player later to respawn to its parcel.  
 RespawnComponent
+
+# Features To Be Added  
+
+## Faint Or Death
+When HP drops to zero, a determination to be made  
 
 ## PvP Mechanism
 Players need to agree to fight to death. Disagreeing comes with a price of being removed on position.
