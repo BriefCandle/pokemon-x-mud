@@ -35,6 +35,10 @@ import { CreateParcelSystem, ID as CreateParcelSystemID } from "../systems/Creat
 import { CreateDungeonSystem, ID as CreateDungeonSystemID } from "../systems/CreateDungeonSystem.sol";
 import { CrawlSystem, ID as CrawlSystemID } from "../systems/CrawlSystem.sol";
 import { BattleSystem, ID as BattleSystemID } from "../systems/BattleSystem.sol";
+import { BattleAcceptSystem, ID as BattleAcceptSystemID } from "../systems/BattleAcceptSystem.sol";
+import { BattleDeclineSystem, ID as BattleDeclineSystemID } from "../systems/BattleDeclineSystem.sol";
+import { BattleOfferSystem, ID as BattleOfferSystemID } from "../systems/BattleOfferSystem.sol";
+
 import { GiftPokemonSystem, ID as GiftPokemonSystemID } from "../systems/GiftPokemonSystem.sol";
 import { AssembleTeamSystem, ID as AssembleTeamSystemID } from "../systems/AssembleTeamSystem.sol";
 import { RestoreTeamHPSystem, ID as RestoreTeamHPSystemID } from "../systems/RestoreTeamHPSystem.sol";
@@ -50,6 +54,9 @@ contract PokemonTest is MudTest {
   GiftPokemonSystem giftPokemonSystem;
   AssembleTeamSystem assembleTeamSystem;
   RestoreTeamHPSystem restoreTeamHPSystem;
+  BattleAcceptSystem battleAcceptSystem;
+  BattleDeclineSystem battleDeclineSystem;
+  BattleOfferSystem battleOfferSystem;
 
   // when inherit: constructor() PokemonTest(new Deploy()) {}
   constructor(IDeploy deploy) MudTest(deploy) {}
@@ -61,6 +68,9 @@ contract PokemonTest is MudTest {
     giftPokemonSystem = GiftPokemonSystem(system(GiftPokemonSystemID));
     assembleTeamSystem = AssembleTeamSystem(system(AssembleTeamSystemID));
     restoreTeamHPSystem = RestoreTeamHPSystem(system(RestoreTeamHPSystemID));
+    battleAcceptSystem = BattleAcceptSystem(system(BattleAcceptSystemID));
+    battleDeclineSystem = BattleDeclineSystem(system(BattleDeclineSystemID));
+    battleOfferSystem = BattleOfferSystem(system(BattleOfferSystemID));
   }
 
   bytes zero = abi.encode(0);
@@ -207,7 +217,7 @@ contract PokemonTest is MudTest {
 
   function createDungeon() internal {
     Coord memory parcel_coord = Coord(0,0);
-    uint256 parcelID = LibMap.parcelID(world, parcel_coord)[0];
+    uint256 parcelID = LibMap.getParcelID(world, parcel_coord)[0];
     console.log(parcelID, "parcel created into dungeon");
     uint32 level= 5;
     uint32[] memory indexes = new uint32[](1);
@@ -281,6 +291,19 @@ contract PokemonTest is MudTest {
 
   function executeRestoreTeamHP(Coord memory coord, address player) prank(player) internal {
     restoreTeamHPSystem.executeTyped(coord);
+  }
+  
+
+  function executeBattleOffer(uint256 offereeID, address offeror) prank(offeror) internal {
+    battleOfferSystem.executeTyped(offereeID);
+  }
+
+  function executeBattleAccept(address offeree) prank(offeree) internal {
+    battleAcceptSystem.execute(zero);
+  }
+
+  function executeBattleDecline(uint256 offereeID, address offeree) prank(offeree) internal {
+    battleDeclineSystem.executeTyped(offereeID);
   }
 
 }

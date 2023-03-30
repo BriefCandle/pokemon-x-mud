@@ -148,7 +148,7 @@ library LibMap {
   }
 
   // like getEntitiesWithValue()
-  function parcelID(IWorld world, Coord memory parcel_coord) internal view returns (uint256[] memory) {
+  function getParcelID(IWorld world, Coord memory parcel_coord) internal view returns (uint256[] memory) {
     WorldQueryFragment[] memory fragments = new WorldQueryFragment[](1);
     fragments[0] = WorldQueryFragment(QueryType.HasValue, ParcelCoordComponentID, abi.encode(parcel_coord));
     return world.query(fragments);
@@ -175,6 +175,16 @@ library LibMap {
 
   function getDungeonPokemons(IUint256Component components, uint256 parcelID) internal view returns (uint32[] memory) {
     return DungeonPokemonsComponent(getAddressById(components, DungeonPokemonsComponentID)).getValue(parcelID);
+  }
+
+  function isParcelDungeon(IUint256Component components, uint256 parcelID) internal view returns (bool) {
+    return DungeonLevelComponent(getAddressById(components, DungeonLevelComponentID)).has(parcelID);
+  }
+
+  function isPositionDungeon(IWorld world, IUint256Component components, Coord memory position_coord) internal view returns (bool) {
+    Coord memory parcel_coord = positionCoordToParcelCoord(position_coord);
+    uint256 parcelID = getParcelID(world, parcel_coord)[0];
+    return isParcelDungeon(components, parcelID);
   }
 
   /** ------------ setter for Dungeon level, pokemons ------------ */

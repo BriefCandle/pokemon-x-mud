@@ -16,6 +16,10 @@ import { BattleActionTimestampComponent, ID as BattleActionTimestampComponentID,
 import { MoveEffectComponent, ID as MoveEffectComponentID, MoveEffect } from "../components/MoveEffectComponent.sol";
 import { MoveInfoComponent, ID as MoveInfoComponentID, MoveInfo } from "../components/MoveInfoComponent.sol";
 
+import { BattleOfferComponent, ID as BattleOfferComponentID } from "../components/BattleOfferComponent.sol";
+import { BattleOfferTimestampComponent, ID as BattleOfferTimestampComponentID, OFFER_DURATION} from "../components/BattleOfferTimestampComponent.sol";
+
+
 import { ID as BattleSystemID } from "../systems/BattleSystem.sol";
 import { BattleType } from "../BattleType.sol";
 import { BattleActionType } from "../BattleActionType.sol";
@@ -253,5 +257,76 @@ library LibBattle {
     return BattleType.OtherPlayer;
   } 
 
+
+  // -------------- Battle Offer & Timestamp Component -------------- //
+  // mainly used by BattleOfferSystem, BattleAcceptSystem, BattleDeclineSystem
+  
+  function offerorToOfferee(IUint256Component components, uint256 offerorID) internal view returns (uint256) {
+    return BattleOfferComponent(getAddressById(components, BattleOfferComponentID)).getValue(offerorID);
+  }
+
+  function offereeToOfferor(IUint256Component components, uint256 offereeID) internal view returns (uint256) {
+    return BattleOfferComponent(getAddressById(components, BattleOfferComponentID)).getEntitiesWithValue(offereeID)[0];
+  }
+
+  function offerorHasOffer(IUint256Component components, uint256 offerorID) internal view returns (bool) {
+    return BattleOfferComponent(getAddressById(components, BattleOfferComponentID)).has(offerorID);
+  }
+
+  function offereeHasOffer(IUint256Component components, uint256 offereeID) internal view returns (bool) {
+    return BattleOfferComponent(getAddressById(components, BattleOfferComponentID)).getEntitiesWithValue(offereeID).length > 0 ? true: false;
+  }
+
+  function offerorToTimestamp(IUint256Component components, uint256 offerorID) internal view returns (uint256) {
+    return BattleOfferTimestampComponent(getAddressById(components, BattleOfferTimestampComponentID)).getValue(offerorID);
+  }
+
+  function offereeToTimestamp(IUint256Component components, uint256 offereeID) internal view returns (uint256) {
+    uint256 offerorID = offereeToOfferor(components, offereeID);
+    return BattleOfferTimestampComponent(getAddressById(components, BattleOfferTimestampComponentID)).getValue(offerorID);
+  }
+
+  // note: use offerorID as ID for an offer
+  function isOfferValid(IUint256Component components, uint256 offerorID) internal view returns (bool) {
+    uint256 timestamp = offerorToTimestamp(components, offerorID);
+    return (block.timestamp - timestamp) > OFFER_DURATION ? false : true;
+  }
+
+  //  --- setter
+
+  function makeOffer(IUint256Component components, uint256 offerorID, uint256 offereeID) internal  {
+    BattleOfferComponent(getAddressById(components, BattleOfferComponentID)).set(offerorID, offereeID);
+    BattleOfferTimestampComponent(getAddressById(components, BattleOfferTimestampComponentID)).set(
+      offerorID, block.timestamp
+    );
+  }
+
+  function acceptOffer(IWorld world, IUint256Component components, uint256 offerorID, uint256 offereeID) internal {
+    uint256 offeror_teamID = LibTeam.playerIDToTeamID(components, offerorID);
+    uint256 offeree_teamID = LibTeam.playerIDToTeamID(components, offereeID);
+
+    uint256 battleID = world.getUniqueEntityId();
+
+    initBattle(components, offeree_teamID, offeror_teamID, battleID);
+
+    deleteOffer(components, offerorID);
+  }
+
+  function deleteOffer(IUint256Component components, uint256 offerorID) internal {
+    BattleOfferComponent(getAddressById(components, BattleOfferComponentID)).remove(offerorID);
+    BattleOfferTimestampComponent(getAddressById(components, BattleOfferTimestampComponentID)).remove(offerorID);
+  }
+
+
+  function initBattle(IUint256Component components, uint256 team1_ID, uint256 team2_ID, uint256 battleID) internal {
+    // 1) set both encountered pokemon and player's teamID in TeamBattle
+    setTwoTeamsToBattle(components, team1_ID, team2_ID, battleID);
+
+    // 2) init battle order
+    initBattleOrder(components, battleID);
+
+    // 3) init battle action timestamp
+    setBattleActionTimestamp(components, battleID, block.timestamp);
+  }
 
 }

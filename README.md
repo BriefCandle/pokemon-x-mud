@@ -1,9 +1,6 @@
 # Roguelike X MUD
 
 # Overview
-Building RPG game mechanisms with the Pokemon gen II as the first demo.  
-
-Basic Gameplay Mechanisms:
 - Players need to assemble a pokemon team (up to 4 members) to crawl through various dungeons where they can level up owned pokemons, catch new pokemon, get item rewards, and/or face PvP battle.
 - Battle is turn-based (if a player purposefully delays a transaction, anyone may call the default move on him, which is skip a turn) with a commit-and-reveal RNG to determine critical damage.
 - When a pokemon dies in battle, its ownership is transferred to dungeon where it dies. Future work can be done to either allow original owner to summon it back or exterminate ghost pokemon. 
@@ -20,7 +17,7 @@ Schedule:
 # Comments on RPG
 An RPG is a game genre involving players strategically collecting and managing in-game elements (characters, equipment, skills, buffs, etc.). Players’ game goal is realized through "battling", in which players properly "stack" the stats of their in-game elements so as to achieve an optimized battling outcome. A feedback loop is then established by rewarding in-game tokens (exp, crystal, and etc.) after battling or completing other in-game activities, which can then be used to upgrade in-game elements, i.e., improving their stats. Therefore, an RPG concerns with two main mechanisms: 1) categorization of in-game elements, and 2) interactions among in-game elements (battling, upgrading, and etc.)
 
-We categorize an RPG game to have 4 essential elements:
+An RPG game is categorized into 4 essential elements:
 1) Characters 
 2) Equipment
 3) Map to crawl
@@ -31,7 +28,6 @@ We are building the classic Pokemon Gen 2 (Gold/Silver/Crystal) to demonstrate o
 2) **Categorization of rights and authorization**, thereby allowing gameplay concepts to be built on each other in a hierachical and parallel order
 3) **Turn-based team battle mechanisms**  
 
-We aim to learn from building this project so that we can rapid-prototyping other future RPG games. More importantly, we want to create an RPG world where different RPG games can share assets and gameplay and allow players to play across games. 
 
 # Pokemon
 Pokemon is the main playable character during the gameplay. Its in-game performance is dictated by its individual stats and its class stats, which are described in `components` below. Rules, such as who can create new classes or how players can spawn new instances, are described in `libraries` and implemented in `systems`.
@@ -151,32 +147,36 @@ Without forming a team, a player may still be able to crawl around. But, he need
 # Rights & Authorizations  
  
 
-As to authorization on entity, there are various types of authorization players or contracts may have over entity, such as ownership, commanding, 
+<!-- As to authorization on entity, there are various types of authorization players or contracts may have over entity, such as ownership, commanding, 
 
 For example, to enter into a dungeon, a player needs to assemble a team from heroes he owns. Breaking it down, ownership changes hands from the player to the team component contract when a team is formed. Rights associated with ownership is no longer applicable to the player. In other words, the player can no longer transfer, authorize transfer, or call any other external function in an ERC721 contract on individual heroes in a team. 
 
 The player now owns the team he created. There are then team-specific ownership rights the player can exercise. For instance, the player can exercise the team dissemble right, which could be stored in a team commander component, and be callable by a dissemble team system. There are also team-specific commanding rights the player can exercise. For instance, the player can order his team to enter into a dungeon, to move around within a dungeon, and to order team members to attack enemies. When a hero dies in a dungeon, the hero is permanently removed from the team, and therefore the player can no longer command it.
 
-The benefit of defining rights and authorization is to allow concepts to be built on each other in a hierachical and parallel order. 
+The benefit of defining rights and authorization is to allow concepts to be built on each other in a hierachical and parallel order.  -->
 
 # Features Added  
 
-## Dungeon Level Entry Requirement, or level bar
+## Dungeon Level Entry Requirement
 A player cannot enter if any of his pokemon level is higher than the level bar. 
 
 ## Respawn
 Interacting with respawn point would allow player later to respawn to its parcel.  
 RespawnComponent
 
+## PvP battle init
+A player needs to make an offer to another play to battle. Declining an offer to battle comes with a price of being removed off position.
+`BattleOfferComponent`: attacker playerID -> target playerID; when offer being made, neither party can move 
+`BattleOfferTimestampComponent`: attacker playerID -> timestamp; if timestamp passes, anyone can call default action  
+`BattleOfferSystem`: needs to pass the require of LibMap for both players' position; also, no battleID for neither player; no battle offer nor offeree from neither; then set on BattleOfferComponent   
+`BattleAcceptSystem`: needs to be accepted by offeree; do not care about time as long as offer exist
+`BattleDeclineSystem`: if within duration, offeree can decline; else, anyone can decline; then remove offeree's position
+
+
 # Features To Be Added  
 
 ## Faint Or Death
 When HP drops to zero, a determination to be made  
-
-## PvP Mechanism
-Players need to agree to fight to death. Disagreeing comes with a price of being removed on position.
-`BattleOfferComponent`: attacker playerID -> target playerID; when offer being made, neither party can move 
-`BattleOfferTimestampComponent`: attacker playerID -> timestamp; if timestamp passes, anyone can call default action
 
 ## Smarter Bot
 Bot could give priority to attack weaker, similar level, and more valuable pokemon. Bot could also precompute type effectiveness and make attack decision accordingly

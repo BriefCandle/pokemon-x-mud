@@ -39,6 +39,8 @@ contract CrawlSystem is System {
     
     // note: it assume player has teamID; revert otherwise
     require(!LibBattle.isPlayerInBattle(components, playerID), "cannot move during a battle");
+    require(!LibBattle.offerorHasOffer(components, playerID), "offeror cannot move");
+    require(!LibBattle.offereeHasOffer(components, playerID), "offeree cannot move");
 
     require(LibMap.obstructions(world, coord).length == 0, "this space is obstructed");
     require(LibMap.players(world, coord).length == 0, "this space has player");
@@ -69,7 +71,7 @@ contract CrawlSystem is System {
     
     // 1) spawn a new encountered pokemon instance from a pokemon class and a given level
     Coord memory parcel_coord = LibMap.positionCoordToParcelCoord(coord);
-    uint256 parcelID = LibMap.parcelID(world, parcel_coord)[0];
+    uint256 parcelID = LibMap.getParcelID(world, parcel_coord)[0];
     uint32[] memory indexes = LibMap.getDungeonPokemons(components, parcelID);
     uint32 index = indexes[rand % indexes.length];
     uint32 level = LibMap.getDungeonLevel(components, parcelID);
@@ -84,17 +86,23 @@ contract CrawlSystem is System {
     uint256[] memory pokemonIDs = new uint256[](team_size);
     pokemonIDs[0] = wildPokemonID;
     LibTeam.setupPokemonsToTeam(components, pokemonIDs, wildTeamID, BattleSystemID);
-    
-    // 3) set both encountered pokemon and player's teamID in BattleTeam
+
+    // 3) init battle
     uint256 battleID = world.getUniqueEntityId();
     uint256 playerTeamID = LibTeam.playerIDToTeamID(components, playerID);
-    LibBattle.setTwoTeamsToBattle(components, playerTeamID, wildTeamID, battleID);
 
-    // 4) init battle order
-    LibBattle.initBattleOrder(components, battleID);
+    LibBattle.initBattle(components, playerTeamID, wildTeamID, battleID);
+    
+    // // 3) set both encountered pokemon and player's teamID in BattleTeam
+    // uint256 battleID = world.getUniqueEntityId();
+    // uint256 playerTeamID = LibTeam.playerIDToTeamID(components, playerID);
+    // LibBattle.setTwoTeamsToBattle(components, playerTeamID, wildTeamID, battleID);
 
-    // 5) init battle action timestamp
-    LibBattle.setBattleActionTimestamp(components, battleID, block.timestamp);
+    // // 4) init battle order
+    // LibBattle.initBattleOrder(components, battleID);
+
+    // // 5) init battle action timestamp
+    // LibBattle.setBattleActionTimestamp(components, battleID, block.timestamp);
 
   }
 

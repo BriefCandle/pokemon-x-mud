@@ -46,6 +46,9 @@
     "BattlePokemonsComponent",
     "BattleActionTimestampComponent",
 
+    "BattleOfferComponent",
+    "BattleOfferTimestampComponent",
+
     "RNGActionTypeComponent",
     "RNGPrecommitComponent",
     "RNGTargetComponent"
@@ -124,6 +127,26 @@
       "RNGPrecommitComponent",
       "RNGTargetComponent"
     ]},
+    { "name": "BattleAcceptSystem",
+    "writeAccess": [
+      "TeamBattleComponent",
+      "BattlePokemonsComponent",
+      "BattleActionTimestampComponent",
+      "BattleOfferComponent",
+      "BattleOfferTimestampComponent"
+    ]},
+    { "name": "BattleDeclineSystem",
+    "writeAccess": [
+      "BattleOfferComponent",
+      "BattleOfferTimestampComponent",
+      "PositionComponent"
+    ]},
+    { "name": "BattleOfferSystem",
+    "writeAccess": [
+      "BattleOfferComponent",
+      "BattleOfferTimestampComponent"
+    ]},
+
     { "name": "ActionMoveSystem",
     "writeAccess": [
       "RNGActionTypeComponent",
