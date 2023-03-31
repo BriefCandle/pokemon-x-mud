@@ -1,7 +1,14 @@
 pragma solidity ^0.8.13;
 
+import { PokemonScript } from "./PokemonScript.s.sol";
 import "../lib/forge-std/src/Script.sol";
 import { getAddressById } from "solecs/utils.sol";
+
+import { LibPokemonClass } from "../src/libraries/LibPokemonClass.sol";
+
+import { ClassIndexComponent, ID as ClassIndexComponentID } from "../src/components/ClassIndexComponent.sol";
+import { MoveNameComponent, ID as MoveNameComponentID } from "../src/components/MoveNameComponent.sol";
+import { ConnectPokemonMovesSystem, ID as ConnectPokemonMovesSystemID } from "../src/systems/ConnectPokemonMovesSystem.sol";
 
 
 import { MoveInfo } from "../src/components/MoveInfoComponent.sol";
@@ -11,18 +18,15 @@ import { MoveEffect } from "../src/components/MoveEffectComponent.sol";
 // source .env
 // forge script script/ConnectPokemonMoves.s.sol:ConnectPokemonMovesScript --rpc-url http://localhost:8545 --broadcast
 
-contract ConnectPokemonMovesScript is Script {
+contract ConnectPokemonMovesScript is PokemonScript {
 
-  address world = 0x5FbDB2315678afecb367f032d93F642f64180aa3;
-  address ClassIndexComponent = 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707;
-  address MoveNameComponent = 0x0165878A594ca255338adfa4d48449f69242Eb8F;
-  address ConnectPokemonMovesSystem = 0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44;
-  
   uint256 pokemonIndex;
   string[] moveNames;
 
   function run() public {
     vm.startBroadcast(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80);
+
+    setup();
 
     pokemonIndex = 1;
     moveNames = ["Tackle", "Growl"];
@@ -33,37 +37,17 @@ contract ConnectPokemonMovesScript is Script {
       moveIDs[i] = getMoveIDFromName(moveNames[i]);
     }
 
-    IConnetPokemonMovesSystem(ConnectPokemonMovesSystem).executeTyped(pokemonID, moveIDs);
+    ConnectPokemonMovesSystem(system(ConnectPokemonMovesSystemID)).executeTyped(pokemonID, moveIDs);
 
     vm.stopBroadcast();
   }
 
   function getPokemonIDFromIndex(uint256 index) private view returns (uint256 pokemonID){
-    pokemonID = IComponent(ClassIndexComponent).getEntitiesWithValue(abi.encode(index))[0];
+    pokemonID = ClassIndexComponent(getAddressById(components, ClassIndexComponentID)).getEntitiesWithValue(abi.encode(index))[0];
   }
 
   function getMoveIDFromName(string memory name) private view returns (uint256 moveID) {
-    moveID = IComponent(MoveNameComponent).getEntitiesWithValue(abi.encode(name))[0];
+    moveID = MoveNameComponent(getAddressById(components, MoveNameComponentID)).getEntitiesWithValue(abi.encode(name))[0];
   }
 
-  // function getMoveIDsFromNames(string[15])
 }
-
-interface IConnetPokemonMovesSystem {
-  function executeTyped(uint256 pokemonID, uint256[] memory moves) external returns (bytes memory);
-}
-
-interface IComponent {
-  function has(uint256 entity) external view returns (bool);
-
-  function getRawValue(uint256 entity) external view returns (bytes memory);
-
-  function getEntities() external view returns (uint256[] memory);
-
-  function getEntitiesWithValue(bytes memory value) external view returns (uint256[] memory);
-}
-
-interface IWorld {
-  function getUniqueEntityId() external view returns (uint256);
-}
-

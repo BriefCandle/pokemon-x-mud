@@ -82,7 +82,7 @@ library LibArray {
   }
 
   // compare two arrays with same elements, not necessarily in the same order
-  function compareArrays(uint[] memory array1, uint[] memory array2) public pure returns (bool) {
+  function compareArrays(uint[] memory array1, uint[] memory array2) internal pure returns (bool) {
     if (array1.length != array2.length) return false;
 
     uint[] memory array2Copy = new uint[](array2.length);

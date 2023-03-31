@@ -48,6 +48,7 @@ contract CrawlSystem is System {
     if (LibMap.levelChecks(world, coord).length > 0) {
       uint32 levelCheck = LibMap.getLevelCheck(components, LibMap.levelChecks(world, coord)[0]);
       uint256[] memory pokemonIDs = LibTeam.playerIDToTeamPokemonIDs(components, playerID);
+      require(pokemonIDs.length > 0, "team has no pokemon");
       for (uint i; i<pokemonIDs.length; i++) {
         require(LibPokemon.getLevel(components, pokemonIDs[i]) <= levelCheck, "pokemon level too high");
       }

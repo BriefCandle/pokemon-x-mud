@@ -10,6 +10,7 @@ import { Coord } from "../components/PositionComponent.sol";
 import { BattleActionType } from "../BattleActionType.sol";
 import { ID as BattleSystemID } from "../systems/BattleSystem.sol";
 import { MAX_DURATION } from "../components/BattleActionTimestampComponent.sol";
+import { OFFER_DURATION } from "../components/BattleOfferTimestampComponent.sol";
 
 import { LibBattle } from "../libraries/LibBattle.sol";
 import { LibOwnedBy } from "../libraries/LibOwnedBy.sol";
@@ -23,54 +24,88 @@ import { LibMap } from "../libraries/LibMap.sol";
 
 contract CrawlTest is PokemonTest {
 
+  uint256 aliceID;
+  uint256 bobID;
+  uint256 eveID;
+
   constructor() PokemonTest(new Deploy()) { }
 
   function testBattleOffer() public {
-    setup();
-    spawnPlayer(1, alice);
-    uint256 aliceID = addressToEntity(alice);
-    spawnPlayer(1, bob);
-    uint256 bobID = addressToEntity(bob);
-    spawnPlayer(1, eve);
-    uint256 eveID = addressToEntity(eve);
+    battleOfferSetup();
     
     vm.expectRevert("can not battle with not adjacent player");
     executeBattleOffer(eveID, alice);
 
     executeBattleOffer(bobID, alice);
 
-    // executeBattleDecline(bobID, bob);
+    // TEST: offeror and offeror cannot move after offer is made
+    vm.expectRevert("offeror cannot move");
+    crawlTo(Coord(0,1), alice);
+    vm.expectRevert("offeree cannot move");
+    crawlTo(Coord(1,1), bob);
+
+    // TEST: a third party cannot make an offer to offeree when an offer is made
+    vm.expectRevert("offeree has existing offer!");
+    executeBattleOffer(bobID, eve);
+  }
+
+  function testBattleDecline() public {
+    battleOfferSetup();
+
+    executeBattleOffer(bobID, alice);
+
+    // TEST: when time not elpase, only offeree may decline offer
+    vm.expectRevert("offeree must be sender to decline");
+    executeBattleDecline(bobID, eve);
+
+    // TEST: after decline offer, offeree's position no longer exist
+    executeBattleDecline(bobID, bob);
+    assertTrue(!LibMap.hasPosition(components, bobID));
+    vm.expectRevert("no existing offer");
+    executeBattleAccept(bob);
+
+  }
+
+  function testBattleOfferTimeElapses() public {
+    battleOfferSetup();
+
+    executeBattleOffer(bobID, alice);
+
+    // TEST: when time elpases, anyone may decline offer 
+    vm.warp(block.timestamp + OFFER_DURATION);
+    executeBattleDecline(bobID, eve);
+    assertTrue(!LibMap.hasPosition(components, bobID));
+    vm.expectRevert("no existing offer");
+    executeBattleAccept(bob);
+
+  }
+
+  function testBattleAccept() public {
+    battleOfferSetup();
+
+    executeBattleOffer(bobID, alice);
 
     executeBattleAccept(bob);
-    
 
+    // TEST: battle initiated when accept offer 
+    uint256 battleID = LibBattle.playerIDToBattleID(components, aliceID);
+    autoPvPBattle(battleID, alice, bob);
   }
 
-  function autoPvPBattle(uint256 battleID, address player1, address player2) internal { 
-    uint256 player1_ID = addressToEntity(player1);
-    uint256 player2_ID = addressToEntity(player2);
 
-    uint256 nextPokemon;
-    uint256[] memory player1_PokemonIDs;
-    uint256[] memory player2_PokemonIDs;
-    uint256 targetID;
-    console.log("--------- PvP Battle Begins ---------");   
-    while(LibBattle.isBattleOrderExist(components, battleID)) {
-      nextPokemon = LibBattle.getBattleNextOrder(components, battleID);
-      player1_PokemonIDs = LibTeam.playerIDToTeamPokemonIDs(components, player1_ID);
-      player2_PokemonIDs = LibTeam.playerIDToTeamPokemonIDs(components, player2_ID);
-      
-      if (LibArray.isValueInArray(nextPokemon, player1_PokemonIDs)) {
-        targetID = LibBattle.playerIDToEnemyPokemons(components, player1_ID)[0];
-        executeBattle(battleID, targetID, BattleActionType.Move0, player1);
-        vm.roll(block.number + LibRNG.WAIT_BLOCKS + 1);
-        executeBattle(battleID, targetID, BattleActionType.Move0, player1);
-      } else {
-        targetID = LibBattle.playerIDToEnemyPokemons(components, player2_ID)[0];
-        executeBattle(battleID, targetID, BattleActionType.Move0, player2);
-        vm.roll(block.number + LibRNG.WAIT_BLOCKS + 1);
-        executeBattle(battleID, targetID, BattleActionType.Move0, player2);
-      }
-    }
+  function battleOfferSetup() internal {
+    setup();
+    spawnPlayer(1, alice);
+    aliceID = addressToEntity(alice);
+    spawnPlayer(1, bob);
+    bobID = addressToEntity(bob);
+    spawnPlayer(1, eve);
+    eveID = addressToEntity(eve);
   }
+
+
+
+
+
+
 }

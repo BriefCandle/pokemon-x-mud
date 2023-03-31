@@ -1,6 +1,9 @@
 pragma solidity ^0.8.13;
 
-import "../lib/forge-std/src/Script.sol";
+import { PokemonScript } from "./PokemonScript.s.sol";
+
+import { CreateMoveClassSystem, ID as CreateMoveClassSystemID } from "../src/systems/CreateMoveClassSystem.sol";
+
 import { PokemonStats } from "../src/components/PokemonStatsComponent.sol";
 import { PokemonType } from "../src/PokemonType.sol";
 import { MoveCategory } from "../src/MoveCategory.sol";
@@ -14,10 +17,7 @@ import { MoveEffect } from "../src/components/MoveEffectComponent.sol";
 // source .env
 // forge script script/CreateMoveClass.s.sol:CreateMoveClassScript --rpc-url http://localhost:8545 --broadcast
 
-contract CreateMoveClassScript is Script {
-
-  address world = 0x5FbDB2315678afecb367f032d93F642f64180aa3;
-  address CreateMoveClassSystem = 0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44;
+contract CreateMoveClassScript is PokemonScript {
   
   string[4] nameArray;
   MoveInfo[4] infoArray;
@@ -25,6 +25,8 @@ contract CreateMoveClassScript is Script {
 
   function run() public {
     vm.startBroadcast(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80);
+
+    setup();
 
     nameArray[0] = 'Tackle';
     infoArray[0] = MoveInfo(PokemonType.Normal, MoveCategory.Physical, 35, 40, 100);
@@ -43,21 +45,12 @@ contract CreateMoveClassScript is Script {
     effectArray[3] = MoveEffect(0,0,0,0,0,0,0,0,0,0,0,MoveTarget.Foe,StatusCondition.LeechSeed);
 
     for(uint i=0; i<nameArray.length; i++) {
-      ICreateMoveClassSystem(CreateMoveClassSystem).executeTyped(
+      CreateMoveClassSystem(system(CreateMoveClassSystemID)).executeTyped(
         nameArray[i], infoArray[i], effectArray[i]
       );
     }
 
     vm.stopBroadcast();
   }
-}
-
-interface ICreateMoveClassSystem {
-  function executeTyped(string memory name, MoveInfo memory info, MoveEffect memory effect) external returns (bytes memory);
-
-}
-
-interface IWorld {
-  function getUniqueEntityId() external view returns (uint256);
 }
 

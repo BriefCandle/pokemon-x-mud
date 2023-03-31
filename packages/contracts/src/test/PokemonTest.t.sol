@@ -289,6 +289,43 @@ contract PokemonTest is MudTest {
     logArray(team_pokemons, "alice pokemon");
   }
 
+  function autoPvPBattle(uint256 battleID, address player1, address player2) internal { 
+    uint256 player1_ID = addressToEntity(player1);
+    uint256 player2_ID = addressToEntity(player2);
+
+    uint256 nextPokemon;
+    uint256[] memory player1_PokemonIDs;
+    uint256[] memory player2_PokemonIDs;
+    uint256 targetID;
+    console.log("--------- PvP Battle Begins ---------");   
+    while(LibBattle.isBattleOrderExist(components, battleID)) {
+      nextPokemon = LibBattle.getBattleNextOrder(components, battleID);
+      player1_PokemonIDs = LibTeam.playerIDToTeamPokemonIDs(components, player1_ID);
+      player2_PokemonIDs = LibTeam.playerIDToTeamPokemonIDs(components, player2_ID);
+      
+      if (LibArray.isValueInArray(nextPokemon, player1_PokemonIDs)) {
+        targetID = LibBattle.playerIDToEnemyPokemons(components, player1_ID)[0];
+        console.log("player: ", player1, "attacks pokemon ", targetID);
+        executeBattle(battleID, targetID, BattleActionType.Move0, player1);
+        vm.roll(block.number + LibRNG.WAIT_BLOCKS + 1);
+        executeBattle(battleID, targetID, BattleActionType.Move0, player1);
+        console.log("target pokemon HP drops to: ", LibPokemon.getHP(components, targetID));
+      } else {
+        targetID = LibBattle.playerIDToEnemyPokemons(components, player2_ID)[0];
+        console.log("player: ", player2, "attacks pokemon ", targetID);
+        executeBattle(battleID, targetID, BattleActionType.Move0, player2);
+        vm.roll(block.number + LibRNG.WAIT_BLOCKS + 1);
+        executeBattle(battleID, targetID, BattleActionType.Move0, player2);
+        console.log("target pokemon HP drops to: ", LibPokemon.getHP(components, targetID));
+      }
+    }
+
+    uint256 loser_ID = LibMap.hasPosition(components, player1_ID) ? player2_ID : player1_ID;
+    assertTrue(!LibMap.hasPosition(components, loser_ID));
+    console.log("loser is: ", loser_ID);
+    console.log("--------- PvP Battle Ends ---------");   
+  }
+
   function executeRestoreTeamHP(Coord memory coord, address player) prank(player) internal {
     restoreTeamHPSystem.executeTyped(coord);
   }

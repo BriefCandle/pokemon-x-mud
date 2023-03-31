@@ -289,7 +289,7 @@ library LibBattle {
   // note: use offerorID as ID for an offer
   function isOfferValid(IUint256Component components, uint256 offerorID) internal view returns (bool) {
     uint256 timestamp = offerorToTimestamp(components, offerorID);
-    return (block.timestamp - timestamp) > OFFER_DURATION ? false : true;
+    return (block.timestamp - timestamp) < OFFER_DURATION ? true : false;
   }
 
   //  --- setter

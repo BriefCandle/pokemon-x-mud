@@ -164,7 +164,7 @@ A player cannot enter if any of his pokemon level is higher than the level bar.
 Interacting with respawn point would allow player later to respawn to its parcel.  
 RespawnComponent
 
-## PvP battle init
+## Offer-accept PvP battle
 A player needs to make an offer to another play to battle. Declining an offer to battle comes with a price of being removed off position.
 `BattleOfferComponent`: attacker playerID -> target playerID; when offer being made, neither party can move 
 `BattleOfferTimestampComponent`: attacker playerID -> timestamp; if timestamp passes, anyone can call default action  
@@ -173,10 +173,19 @@ A player needs to make an offer to another play to battle. Declining an offer to
 `BattleDeclineSystem`: if within duration, offeree can decline; else, anyone can decline; then remove offeree's position
 
 
+
 # Features To Be Added  
 
+## Shop Terrain & items
+
+## One-direction Terrain
+allows only left-to-right, right-to-left, up-to-down, down-to-up terrain
+
+## Penalty for defeat
+Player team being defeated from dungeon needs to choose a pokemon from his team to be sacrificed. Failure of compliance prevent respawn.  
+
 ## Faint Or Death
-When HP drops to zero, a determination to be made  
+When HP drops to zero, a determination to be made whether pokemon would faint or die for good.  
 
 ## Smarter Bot
 Bot could give priority to attack weaker, similar level, and more valuable pokemon. Bot could also precompute type effectiveness and make attack decision accordingly
