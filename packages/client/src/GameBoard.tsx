@@ -1,27 +1,25 @@
-import { PokemonClasses } from "./PokemonClasses";
+import { PokemonClasses } from "./components/PokemonClass/PokemonClasses";
 import { useEffect, useRef } from "react";
 import { useMUD } from "./mud/MUDContext";
-import { useComponentValue, useEntityQuery } from "@latticexyz/react";
+import { useComponentValue, useEntityQuery, useObservableValue } from "@latticexyz/react";
 import { useKeyboardMovement } from "./useKeyboardMovement";
-import { useParcels } from "./useParcels";
+import { useParcels } from "./components/Map/useParcels";
 import { parcelHeight, parcelWidth, terrainWidth, terrainHeight } from "./enum/terrainTypes";
 import { images } from "./CreateParcel";
 import { useSpawn } from "./useSpawn";
-import { getComponentEntities, getComponentValueStrict, Has } from "@latticexyz/recs";
+import { getComponentEntities, getComponentValueStrict, getComponentValue, Has } from "@latticexyz/recs";
 import ethan from "./assets/player/ethan.png";
 
 
 export const GameBoard = () => {
 
   const {
-    components: { Position, Player, Encounter, PokemonInstance },
-    api: { crawlTo },
-    systems,
-    world,
+    components: { Position, Player },
+    api: { spawnPlayer },
     playerEntity,
   } = useMUD();
 
-  // console.log(world)
+  console.log("test", playerEntity)
 
   const otherPlayers = useEntityQuery([Has(Player), Has(Position)])
     .filter((entity) => entity != playerEntity)
@@ -29,32 +27,33 @@ export const GameBoard = () => {
       const position = getComponentValueStrict(Position, entity);
       return {entity, position}
     })
+  
+  // console.log(playerEntity);
+  useObservableValue(Position.update$);
+  console.log(otherPlayers)
+    
   const playerPosition = useComponentValue(Position, playerEntity);
-  // console.log(playerPosition)
-  const encounter = useComponentValue(Encounter, playerEntity);
-  console.log(encounter)
-  const pokemonInstanceIndex = getComponentEntities(PokemonInstance)
-  // const pokemoInstances = useComponentValue(PokemonInstance)
-  console.log(pokemonInstanceIndex)
+  console.log(playerPosition)
 
-  const { canSpawn, spawn } = useSpawn();
+  // const { canSpawn, spawn } = useSpawn();
+  const canSpawn = getComponentValue(Player, playerEntity)?.value !== true;
   useKeyboardMovement();
 
   // makes player always center of the map
   const mapRef = useRef(null);
-  useEffect(() => {
-    const mapContainer = mapRef.current;
-    const { clientWidth, clientHeight } = mapContainer;
-    // calculate the position of the entity relative to the center of the map    
-    const xCenter = clientWidth / 2;
-    const yCenter = clientHeight / 2;
-    const xEntity = playerPosition?.x * terrainWidth; // assuming each cell is 32px wide
-    const yEntity = playerPosition?.y * terrainHeight; // assuming each cell is 32px high
-    const xTranslate = xCenter - xEntity;
-    const yTranslate = yCenter - yEntity;
-    // apply the transform to the map
-    mapContainer?.style.setProperty('transform', `translate(${xTranslate}px, ${yTranslate}px)`);
-  }, [playerPosition])
+  // useEffect(() => {
+  //   const mapContainer = mapRef.current;
+  //   const { clientWidth, clientHeight } = mapContainer;
+  //   // calculate the position of the entity relative to the center of the map    
+  //   const xCenter = clientWidth / 2;
+  //   const yCenter = clientHeight / 2;
+  //   const xEntity = playerPosition?.x * terrainWidth; // assuming each cell is 32px wide
+  //   const yEntity = playerPosition?.y * terrainHeight; // assuming each cell is 32px high
+  //   const xTranslate = xCenter - xEntity;
+  //   const yTranslate = yCenter - yEntity+100;
+  //   // apply the transform to the map
+  //   mapContainer?.style.setProperty('transform', `translate(${xTranslate}px, ${yTranslate}px)`);
+  // }, [playerPosition])
 
   const parcels = useParcels();
   // console.log(parcels)
@@ -148,8 +147,8 @@ export const GameBoard = () => {
   return (
     <div style={{ width: "500px", height: "400px", overflow: "hidden" }}>
       <div ref={mapRef}>
-        {canSpawn? <button onClick={spawn}>Spawn</button> : null}
-      {parcels.map(renderParcel)}
+        {canSpawn? <button onClick={spawnPlayer}>Spawn</button> : null}
+        {parcels.map(renderParcel)}
       </div>
     </div>
   )

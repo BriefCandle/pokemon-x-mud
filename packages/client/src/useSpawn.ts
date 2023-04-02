@@ -7,7 +7,6 @@ import { useMUD } from "./mud//MUDContext";
 
 export const useSpawn = () => {
   const {
-    components: { Position, Player },
     systems,
     playerEntity,
   } = useMUD();
@@ -21,8 +20,8 @@ export const useSpawn = () => {
     async () => {
       if (!canSpawn) throw new Error("Already spawned");
 
-      const bytes = new Uint8Array(0)
-      const tx = await systems["system.SpawnPlayer"].execute(bytes)
+      // const bytes = new Uint8Array(0)
+      const tx = await systems["system.SpawnPlayer"].executeTyped(1);
       await tx.wait();
 
     },[canSpawn]

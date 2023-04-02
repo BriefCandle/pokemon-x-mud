@@ -4,14 +4,14 @@ import { GameBoard } from "./GameBoard";
 import { useMUD } from "./mud/MUDContext";
 import { CreateParcel } from "./CreateParcel";
 import { useState } from 'react';
-import { PokemonClasses } from "./PokemonClasses";
+import { PokemonClasses } from "./components/PokemonClass/PokemonClasses";
 
 export const App = () => {
   const {
     components: { LoadingState },
     singletonEntity,
   } = useMUD();
-
+  
   const loadingState = useComponentValue(
     LoadingState,
     singletonEntity

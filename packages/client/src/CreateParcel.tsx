@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMUD } from "./mud/MUDContext";
 import { useComponentValue } from "@latticexyz/react";
-import { useParcels } from "./useParcels";
+import { useParcels } from "./components/Map/useParcels";
 import { TerrainConfig, terrainTypes, TerrainType, parcelHeight, parcelWidth, terrainWidth, terrainHeight } from "./enum/terrainTypes";
 import flower from "./assets/tiles/flower.gif"
 import grass_rustle00 from "./assets/tiles/grass_rustle00.png"

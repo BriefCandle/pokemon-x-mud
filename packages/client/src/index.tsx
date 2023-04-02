@@ -3,7 +3,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ReactDOM from "react-dom/client";
 import { ToastContainer } from "react-toastify";
 import { App } from "./App";
-import { setup } from "./setup";
+import { setup } from "./mud/setup";
 import { MUDProvider } from "./mud/MUDContext";
 import { ComponentBrowser } from "./ComponentBrowser";
 

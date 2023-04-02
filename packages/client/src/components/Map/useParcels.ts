@@ -1,14 +1,13 @@
 import { useComponentValue } from "@latticexyz/react";
 import { getComponentEntities, getComponentValue } from "@latticexyz/recs";
-import { useMUD } from "./mud/MUDContext";
-import { useEffect } from "react";
+import { useMUD } from "../../mud/MUDContext";
 import { ethers } from "ethers";
-import { terrainTypes, TerrainType, parcelHeight, parcelWidth} from "./enum/terrainTypes";
+import { terrainTypes, TerrainType, parcelHeight, parcelWidth} from "../../enum/terrainTypes";
 
 
 export const useParcels = () => {
   const {
-    components: { Parcel},
+    components: { Parcel },
   } = useMUD();
 
   // const positionIndexes = getComponentEntities(Position);
@@ -20,16 +19,19 @@ export const useParcels = () => {
   }
 
   const parcels = Array.from(parcelIndexes, (index)=> {
-    const parcel = getComponentValue(Parcel, index)
+    const parcel = getComponentValue(Parcel, index);
     // this is the relative x, y within a parcel
-    const { x, y, terrain } = parcel; 
+    const x  = parcel?.x;
+    const y  = parcel?.y;
+    const terrain: string = parcel?.terrain;
+    
     // use offset to find absolute coords
     // const xOffset = parcelWidth * x;
     // const yOffset = parcelHeight * y;
 
     const terrainValues = Array.from(ethers.utils.toUtf8Bytes(terrain)).map((value, index)=>({
       x: index % parcelWidth,
-      y: Math.floor(index/parcelWidth),
+      y: Math.floor(index/parcelHeight),
       value,
       type: value in TerrainType ? terrainTypes[value as TerrainType]: null,
     }))

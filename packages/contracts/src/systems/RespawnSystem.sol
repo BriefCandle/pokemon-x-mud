@@ -8,34 +8,27 @@ import { ObtainFirstPokemonSystem, ID as ObtainFirstPokemonSystemID } from "./Ob
 import { LibMap } from "../libraries/LibMap.sol";
 import { parcelWidth, parcelHeight } from "../components/ParcelComponent.sol";
 
-uint256 constant ID = uint256(keccak256("system.SpawnPlayer"));
+uint256 constant ID = uint256(keccak256("system.Respawn"));
 
 // spawn a player to parcel(0,0)
-contract SpawnPlayerSystem is System {
+contract RespawnSystem is System {
   
 
   constructor(IWorld _world, address _components) System(_world, _components) { }
 
   function execute(bytes memory args) public returns (bytes memory) {
-    (uint32 index) = abi.decode(args, (uint32));
-    return executeTyped(index);
-  }
-
-  function executeTyped(uint32 index) public returns (bytes memory) {
-    uint256 playerId = addressToEntity(msg.sender);
+    uint256 playerID = addressToEntity(msg.sender);
 
     PlayerComponent player = PlayerComponent(getAddressById(components, PlayerComponentID));
-    require(!player.has(playerId));
-      
-    player.set(playerId);
-      
-    LibMap.spawnPlayerOnMap(world, components, playerId);
-      
-    ObtainFirstPokemonSystem(getAddressById(world.systems(), ObtainFirstPokemonSystemID)).executeTyped(
-      index, playerId
-    );
+    require(player.has(playerID), "playerID exist");
+    require(!LibMap.hasPosition(components, playerID), "player still on map");
 
+    // TODO: respawn position component
+        
+    LibMap.spawnPlayerOnMap(world, components, playerID);
+    
   }
+
 
 
 

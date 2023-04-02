@@ -28,6 +28,10 @@ contract CreatePokemonClassSystem is System {
     // TODO: need to write some authorization here
     uint256 entityID = world.getUniqueEntityId();
 
+    ClassIndexComponent iComp = ClassIndexComponent(getAddressById(components, ClassIndexComponentID));
+    require(!iComp.has(index), "class index already exist");
+    iComp.set(entityID, index);
+
     ClassBaseExpComponent baseExpComp = ClassBaseExpComponent(getAddressById(components, ClassBaseExpComponentID));
     baseExpComp.set(entityID, baseExp);
 
@@ -42,8 +46,7 @@ contract CreatePokemonClassSystem is System {
     // CatchRateComponent crComp = CatchRateComponent(getAddressById(components, CatchRateComponentID));
     // crComp.set(entityID, cr);
 
-    ClassIndexComponent iComp = ClassIndexComponent(getAddressById(components, ClassIndexComponentID));
-    iComp.set(entityID, index);
+
   }
 
 }

@@ -1,9 +1,18 @@
 import { useComponentValue } from "@latticexyz/react";
-import { useMUD } from "./mud/MUDContext";
+import { useMUD } from "../../mud/MUDContext";
 import { useState, useEffect } from "react";
 import { getComponentEntities } from "@latticexyz/recs";
 
-
+export const DisplayStruct = (struct:any) => {
+  const entries = Object.entries(struct);
+  return (
+    <div>
+      {entries.map(([key, value])=> {       
+        return  <>{key}:{value} &nbsp;</>
+      })}
+    </div>
+  )
+}
 
 export const PokemonMoves = (props:any) => {
   const {
@@ -18,18 +27,7 @@ export const PokemonMoves = (props:any) => {
   const moveInfo = moveIndexes?.map(index => {return useComponentValue(MoveInfo, index)});
   const moveEffect = moveIndexes?.map(index => {return useComponentValue(MoveEffect, index)});
 
-  const displayStruct = (struct: any) => {
-    const entries = Object.entries(struct);
-    return (
-      <div>
-        {entries.map(([key, value])=> (
-          <span key={key}>
-            {key}:{value} &nbsp;
-          </span>
-        ))}
-      </div>
-    )
-  }
+
 
   return (
     <div> 
@@ -39,8 +37,10 @@ export const PokemonMoves = (props:any) => {
           <div>Move Name: {moveNames[index]}</div>
           <div>Move ID: {moveIDs[index]}</div>
           <div>Move Index: {moveIndexes[index]}</div>
-          <div>Move Info: {displayStruct(moveInfo[index])}</div>
-          <div>Move Effect: {displayStruct(moveEffect[index])}</div>
+          <div>Move Info: {DisplayStruct(moveInfo[index])}</div>
+          {/* <DisplayStruct struct={moveInfo[index]} /> */}
+          {/* <DisplayStruct struct={moveEffect[index]} /> */}
+          <div>Move Effect: {DisplayStruct(moveEffect[index])}</div>
           <br />
         </div>
       ))}

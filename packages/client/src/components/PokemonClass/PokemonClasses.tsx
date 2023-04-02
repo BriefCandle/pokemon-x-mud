@@ -1,23 +1,18 @@
 import { useComponentValue } from "@latticexyz/react";
-import { useMUD } from "./mud/MUDContext";
+import { useMUD } from "../../mud/MUDContext";
 import { useState, useEffect } from "react";
 import { getComponentEntities } from "@latticexyz/recs";
 import { PokemonMoves } from "./PokemonMoves";
 import { PokemonClass } from "./PokemonClass";
 
 
-
 export const PokemonClasses = () => {
   const {
-    components: { BaseStats},
+    components: { ClassBaseStats},
     world,
-    systems,
-    playerEntity,
   } = useMUD();
 
-    console.log(world)
-  // const heroIDs = ClassHeroStats.entities()
-  const pokemonWorldIndexes = getComponentEntities(BaseStats);
+  const pokemonWorldIndexes = getComponentEntities(ClassBaseStats);
 
   return (
     <div>
@@ -27,10 +22,10 @@ export const PokemonClasses = () => {
         <PokemonClass indexes={""}/>
       })
       } */}
-      {Array.from(pokemonWorldIndexes).map((worldIndex, index) => (
+      {Array.from(pokemonWorldIndexes).map((pokemonIndex, index) => (
         <div key={index} style={{ display: 'flex', flexDirection: 'column', border: '1px solid black', padding: '10px' }}>
-          <PokemonClass index={worldIndex} />
-          <PokemonMoves index={worldIndex}/>
+          <PokemonClass index={pokemonIndex} />
+          <PokemonMoves index={pokemonIndex}/>
         </div>
       ))}
       </div>
