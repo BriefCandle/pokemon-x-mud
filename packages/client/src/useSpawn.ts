@@ -1,5 +1,4 @@
 import { useEntityQuery, useComponentValue } from "@latticexyz/react";
-import { getComponentEntities, getComponentValue, Has } from "@latticexyz/recs";
 
 import { uuid } from "@latticexyz/utils";
 import { useCallback, useMemo } from "react";

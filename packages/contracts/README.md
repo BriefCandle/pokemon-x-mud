@@ -73,6 +73,13 @@ A move describes the move action a game character can perform. There is no separ
 
 `MoveName`:  records move's name of a move class    
 
+`MoveInstance`: move instanceID -> move classID  
+
+`MoveInstanceDuration`: move instanceID -> duration left  
+
+`MoveInstanceOnPokemon`: move instanceID -> pokemonID  
+
+
 # Team
 "Team" represents a player's right to crawl around dungeon & enter into a battle. 
 
@@ -125,7 +132,7 @@ In the official release, game project could sell parcels or rent out editing rig
 
 `Player`: entityID -> Bool
 
-`Encounter`: entityID -> Bool  
+`EncounterTrigger`: entityID -> Bool  
 
 `Obstruction`: entityID -> Bool  
 
@@ -175,6 +182,17 @@ A player needs to make an offer to another play to battle. Declining an offer to
 
 
 # Features To Be Added  
+
+## Move's status effect (redo)
+delete `BattleStatsComponent` &  implement  
+`MoveInstance`: move instanceID -> move classID  
+`MoveInstanceDuration`: move instanceID -> duration left  
+`MoveInstanceOnPokemon`: move instanceID -> pokemonID  
+1) a pokemon's "real" status is a multiplation of all moves on it
+2) reset move on a pokemon when said pokemon finishs its action: duration =-1 ; if duration == 0, remove move instanceID on all three components
+
+## Pokemon's position in team
+have move specifying which position can use against which enemy position. Therefore, there are moves that can change enemy's own position
 
 ## Shop Terrain & items
 

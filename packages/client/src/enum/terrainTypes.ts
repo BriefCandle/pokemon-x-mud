@@ -1,14 +1,22 @@
 export enum TerrainType {
   None,
-  Path ,
+  Path,
   Gravel,
   Grass,
   Flower,
-  GrassTall,
-  TreeShort,
-  TreeTall,
+  GrassTall,    // encounter
+  TreeShort,    // obstruction
+  TreeTall,     // obstruction
   Water,
-  Boulder,
+  Boulder,      // obstruction
+  Nurse,        // nurse, obstruction
+  PC,           // PC, obstruction
+  Spawn,        // Spawn, obstruction
+  LevelCheck1 // 10
+  // LevelCheck2,  // 20
+  // LevelCheck3,  // 30
+  // LevelCheck4,  // 30
+  // LevelCheck5   // 30
 }
 
 export type TerrainConfig = {
@@ -79,6 +87,30 @@ export const terrainTypes: Record<TerrainType, TerrainConfig> = {
     tile01: "",
     tile11: ""
   },
+  [TerrainType.Nurse]: {
+    tile00: "",
+    tile10: "",
+    tile01: "",
+    tile11: ""
+  },
+  [TerrainType.PC]: {
+    tile00: "pc00",
+    tile10: "pc10",
+    tile01: "pc01",
+    tile11: "pc11"
+  },
+  [TerrainType.Spawn]: {
+    tile00: "",
+    tile10: "",
+    tile01: "",
+    tile11: ""
+  },
+  [TerrainType.LevelCheck1]: {
+    tile00: "level_check",
+    tile10: "level_check",
+    tile01: "level_check",
+    tile11: "level_check"
+  },
 };
 
 export const parcelWidth = 5;
@@ -86,3 +118,10 @@ export const parcelHeight = 5;
 
 export const terrainWidth = 40;
 export const terrainHeight = 40;
+
+export enum InteractTerrainType {
+  None,
+  Nurse,
+  PC,
+  Spawn
+}

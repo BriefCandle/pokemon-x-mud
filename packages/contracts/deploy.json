@@ -75,14 +75,14 @@
     { "name": "SpawnPokemonSystem",
     "writeAccess": [
       "PokemonEVComponent",
-      "PokemonBattleStatsComponent",
       "PokemonClassIDComponent",
       "PokemonExpComponent",
       "PokemonLevelComponent",
       "PokemonMovesComponent",
       "PokemonHPComponent",
       "PokemonItemComponent",
-      "PokemonStatusComponent"
+      "PokemonStatusComponent",
+      "PokemonBattleStatsComponent"
     ]
     },
     { "name": "CreateParcelSystem",

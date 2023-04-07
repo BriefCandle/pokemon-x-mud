@@ -23,7 +23,7 @@ contract CreateParcel00Script is CreateParcelScript {
     map = [
       [S, S, S, S, S],
       [S, G, G, G, G],
-      [S, G, G, G, G],
+      [S, G, PC, G, G],
       [S, G, G, G, G],
       [S, G, G, G, G]
     ];

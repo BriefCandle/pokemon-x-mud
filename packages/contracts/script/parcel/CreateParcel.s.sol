@@ -27,6 +27,10 @@ contract CreateParcelScript is PokemonScript {
   TerrainType W = TerrainType.Water;
   TerrainType B = TerrainType.Boulder;
 
+  TerrainType N = TerrainType.Nurse;
+  TerrainType PC = TerrainType.PC;
+  TerrainType LC = TerrainType.LevelCheck1;
+
   TerrainType[parcelHeight][parcelWidth] map;
 
   function convertTerrainArrayToBytes(TerrainType[parcelHeight][parcelWidth] memory map) internal pure returns( bytes memory terrain) {

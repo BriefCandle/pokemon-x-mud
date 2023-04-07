@@ -79,12 +79,26 @@ export const MoveLevels = {value: Type.NumberArray};
 
 export const PokemonMoves = {value: Type.NumberArray};
 
+export const PokemonIDs = {value: Type.NumberArray};
+
 
 export const components = {
-  Encounter: defineNumberComponent(world, {
-    metadata: {contractId: "component.Encounter"}
+  // ----- Team components: -----
+  Team: defineComponent(world,
+    {value: Type.Number},
+    {id: "Team", metadata: {contractId: "component.Team"}}
+  ),
+  TeamPokemons: defineComponent(world,
+    PokemonIDs,
+    {id: "TeamPokemons", metadata: {contractId: "component.TeamPokemons"}}
+  ),
+  OwnedBy: defineNumberComponent(world, {
+    metadata: {contractId: "component.OwnedBy"}
   }),
-  // crawl, position components:
+  // ----- Parcel, position components: -----
+  EncounterTrigger: defineBoolComponent(world, {
+    metadata: {contractId: "component.EncounterTrigger"}
+  }),
   Parcel: defineComponent(world,
     Parcel,
     {id: "Parcel", metadata: {contractId: "component.Parcel"}}
@@ -95,6 +109,15 @@ export const components = {
   ),
   Player: defineBoolComponent(world, {
     metadata:{contractId: "component.Player"}
+  }),
+  TerrainPC: defineBoolComponent(world, {
+    metadata:{contractId: "component.TerrainPC"}
+  }),
+  TerrainNurse: defineBoolComponent(world, {
+    metadata:{contractId: "component.TerrainNurse"}
+  }),
+  TerrainSpawn: defineBoolComponent(world, {
+    metadata:{contractId: "component.TerrainSpawn"}
   }),
   Position: overridableComponent(
     defineCoordComponent(world,{

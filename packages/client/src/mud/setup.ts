@@ -15,7 +15,7 @@ export type SetupResult = Awaited<ReturnType<typeof setup>>;
 
 export const setup = async () => {
   console.info(`Booting with network config:`, config);
-  
+
   const result = await setupMUDNetwork<typeof components, SystemTypes>(
     config,
     world,
@@ -72,9 +72,7 @@ export const setup = async () => {
   // ---------------- api ---------------------------------------
 
   const crawlTo = async (x: number, y: number) => {
-
     const positionId = uuid();
-    console.log(playerEntity)
     components.Position.addOverride(positionId, {
       entity: playerEntity,
       value: { x, y },
@@ -111,9 +109,25 @@ export const setup = async () => {
     }
   }
 
-  spawnPlayer();
+  const assembleOldTeam = async (pokemonIDs: string[]) => {
+    try {
+      const tx = await result.systems["system.AssembleOldTeam"].executeTyped(pokemonIDs);
+      await tx.wait();
+    } finally {
+      console.log("old team reassembled")
+    }
+  }
 
-  console.log("test")
+  const assembelTeam = async (pokemonIDs: string[], pc_coord: {x:number,y:number}) => {
+    try {
+      const tx = await result.systems["system.AssembleTeam"].executeTyped(pokemonIDs, pc_coord);
+      await tx.wait();
+    } finally {
+      console.log("team reassembled")
+    }
+  }
+
+  spawnPlayer();
 
   return {
     ...result,
@@ -131,6 +145,8 @@ export const setup = async () => {
       crawlTo,
       crawlBy,
       spawnPlayer,
+      assembleOldTeam,
+      assembelTeam
     },
   };
 };

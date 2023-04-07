@@ -13,8 +13,6 @@ import { LibPokemonClass } from "./LibPokemonClass.sol";
 import { LibTeam } from "./LibTeam.sol";
 import { LibBattle } from "./LibBattle.sol";
 
-import { BattleStats } from "../components/PokemonBattleStatsComponent.sol";
-
 import { OwnedByComponent, ID as OwnedByComponentID } from "../components/OwnedByComponent.sol";
 import { PokemonClassIDComponent, ID as PokemonClassIDComponentID } from "../components/PokemonClassIDComponent.sol";
 

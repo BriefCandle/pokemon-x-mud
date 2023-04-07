@@ -4,8 +4,6 @@ import { System, IWorld } from "solecs/System.sol";
 import { getAddressById, addressToEntity } from "solecs/utils.sol";
 import { IUint256Component } from "solecs/interfaces/IUint256Component.sol";
 
-import { BattleStats } from "../components/PokemonBattleStatsComponent.sol";
-
 import { PokemonEVComponent, ID as PokemonEVComponentID } from "../components/PokemonEVComponent.sol";
 
 import { PokemonClassInfo } from "../components/ClassInfoComponent.sol";

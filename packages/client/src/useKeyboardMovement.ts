@@ -1,27 +1,45 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useMUD } from "./mud/MUDContext";
 
-export const useKeyboardMovement = () => {
-  const {
-    api: { crawlBy },
-  } = useMUD();
+export const useKeyboardMovement = (
+  trigger: boolean,
+  press_up: any,
+  press_down: any,
+  press_left: any,
+  press_right: any,
+  press_a: any,
+  press_b: any,
+  press_start: any
+) => {
 
   useEffect(() => {
-    const listener = (e: KeyboardEvent) => {
-      if (e.key === "w") {
-        crawlBy(0, -1);
-      }
-      if (e.key === "s") {
-        crawlBy(0, 1);
-      }
-      if (e.key === "a") {
-        crawlBy(-1, 0);
-      }
-      if (e.key === "d") {
-        crawlBy(1, 0);
-      }
-    };
-    window.addEventListener("keydown", listener);
-    return () => window.removeEventListener("keydown", listener);
-  }, [crawlBy]);
+    if (trigger) {
+      const listener = (e: KeyboardEvent) => {
+        if (e.key === "w") {
+          press_up();
+        }
+        if (e.key === "s") {
+          press_down();
+        }
+        if (e.key === "a") {
+          press_left();
+        }
+        if (e.key === "d") {
+          press_right();
+        }
+        if (e.key === "j") {
+          press_a();
+        }
+        if (e.key === "k") {
+          press_b();
+        }
+        if (e.key === "Enter") {
+          press_start();
+        }
+      };
+      window.addEventListener("keydown", listener);
+      return () => window.removeEventListener("keydown", listener);
+    }
+  }, [press_up, press_down, press_left, press_right,press_a, press_b, press_start]);
+
 }
