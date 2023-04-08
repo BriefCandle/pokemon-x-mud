@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMUD } from "../../mud/MUDContext";
 import { useComponentValue, useEntityQuery, useObservableValue } from "@latticexyz/react";
 // import { useKeyboardMovement } from "../../useKeyboardMovement";
@@ -43,14 +43,20 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
     playerEntity,
   } = useMUD();
 
-  useObservableValue(Position.update$);
+  const getTerrainType = (position: {x: number, y: number}): InteractTerrainType => {
+    const positionIndex = getEntitiesWithValue(Position, position as ComponentValue<{x: Type.Number, y: Type.Number}>)?.values().next().value;
+    if (getComponentValue(TerrainPC, positionIndex)?.value) return InteractTerrainType.PC;
+    if ((getComponentValue(TerrainNurse, positionIndex)?.value)) return InteractTerrainType.Nurse;
+    if ((getComponentValue(TerrainSpawn, positionIndex)?.value)) return InteractTerrainType.Spawn;
+    return InteractTerrainType.None;
+  }
+
   const playerPosition = useComponentValue(Position, playerEntity);
   const x_coord = playerPosition?.x;
   const y_coord = playerPosition?.y;
 
 
-
-  const [playerDirection, setPlayerDirection] = useState<PlayerDirection>();
+  const [playerDirection, setPlayerDirection] = useState<PlayerDirection>(PlayerDirection.Up);
   const press_up = () => {
     setPlayerDirection(PlayerDirection.Up);
     crawlBy(0, -1);}
@@ -67,7 +73,7 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
     setPlayerDirection(PlayerDirection.Right);
     crawlBy(1, 0);}
   
-  const interactCoord = getInteractCoord(playerPosition, playerDirection)
+  const interactCoord = playerPosition ? getInteractCoord(playerPosition, playerDirection) : undefined;
 
   const press_a = () => {
     if (x_coord !== undefined && y_coord !== undefined && interactCoord !== undefined) {
@@ -83,14 +89,6 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
       }
     }
   }
-
-  const getTerrainType = (position: {x: number, y: number}): InteractTerrainType => {
-    const positionIndex = getEntitiesWithValue(Position, position as ComponentValue<{x: Type.Number, y: Type.Number}>)?.values().next().value;
-    if (getComponentValue(TerrainPC, positionIndex)?.value) return InteractTerrainType.PC;
-    if ((getComponentValue(TerrainNurse, positionIndex)?.value)) return InteractTerrainType.Nurse;
-    if ((getComponentValue(TerrainSpawn, positionIndex)?.value)) return InteractTerrainType.Spawn;
-    return InteractTerrainType.None;
-  }
   
   const press_b = () => {return;}
   const press_start = () => setActive(ActiveComponent.menu);
@@ -98,7 +96,7 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
   useKeyboardMovement(activeComponent == ActiveComponent.map, 
     press_up, press_down, press_left, press_right, press_a, press_b, press_start)
     
-
+  useObservableValue(Position.update$)
   const otherPlayers = useEntityQuery([Has(Player), Has(Position)])
     .filter((entity) => entity != playerEntity)
     .map((entity) => {
@@ -106,9 +104,11 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
       return {entity, position}
     })
   
+  
     // makes player always center of the map
-    const mapRef = useRef(null);
-    useEffect(() => {
+  const mapRef = useRef(null);
+  useEffect(() => {
+    if (playerPosition){      
       const mapContainer: any = mapRef.current;
       const { clientWidth, clientHeight } = mapContainer;
       // calculate the position of the entity relative to the center of the map    
@@ -119,11 +119,34 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
       const xTranslate = xCenter - xEntity;
       const yTranslate = yCenter - yEntity+100;
       // apply the transform to the map
-      mapContainer?.style.setProperty('transform', `translate(${xTranslate}px, ${yTranslate}px)`);
-    }, [playerPosition])
+      mapContainer?.style.setProperty('transform', `translate(${xTranslate}px, ${yTranslate}px)`);}
+  }, [playerPosition])
   
 
   const parcels = useParcels();
+
+  const RenderPlayer = (props: {entity: any, player_position: {x: number, y:number}, 
+    parcel_position: {x:number, y:number}, terrain_position: {x:number, y:number}}) => {
+    const {entity, player_position, parcel_position, terrain_position} = props;
+    
+    const x_offset = parcel_position.x * parcelWidth;
+    const y_offset = parcel_position.y * parcelHeight;
+    const x_player = player_position.x - x_offset;
+    const y_player = player_position.y - y_offset;
+    // console.log("player",x_player, y_player)
+    // console.log("parcel",parcel_position.x, parcel_position.y)
+    // console.log("terrain", terrain_position.x, terrain_position.y)
+    
+    return (
+      <>
+        {x_player === terrain_position.x && y_player === terrain_position.y ? 
+          <div style={{zIndex: 1, position: 'absolute'}} key={`${entity},${x_player}, ${y_player}}`}>
+            <img style={{width: '25px'}} src={ethan} alt="" />
+          </div>  : null}
+      </>
+    )
+
+  }
 
   const RenderParcel = (parcel: any, index: any) => {
     const { x_parcel, y_parcel, parcel_info} = parcel as {x_parcel: number, y_parcel: number, parcel_info:[]};
@@ -136,8 +159,8 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
     const x_offset = x_parcel * parcelWidth;
     const y_offset = y_parcel * parcelHeight;
 
-    const player_x = playerPosition?.x - x_offset;
-    const player_y = playerPosition?.y - y_offset;
+    // const player_x = playerPosition?.x - x_offset;
+    // const player_y = playerPosition?.y - y_offset;
     
     return (
       <div key={`${x_parcel},${y_parcel}`} style={{position: 'relative', left: x_parcel*parcelWidth*terrainWidth, top: y_parcel*parcelHeight*terrainHeight}}>
@@ -149,12 +172,17 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
           }}>
             <RenderTerrain key={index} terrainValue={terrain} t_index={index} />
 
-            { player_x === terrain.x && player_y === terrain.y ? 
+            { playerPosition ? 
+              <RenderPlayer entity={playerEntity} player_position={{x: playerPosition?.x, y: playerPosition?.y}} 
+              parcel_position={{x: x_parcel, y: y_parcel}} terrain_position={{x: terrain.x, y: terrain.y}}/> : null
+            }
+
+            {/* { player_x === terrain.x && player_y === terrain.y ? 
               <div style={{zIndex: 1, position: 'absolute'}} key={`${player_x}, ${player_y}}`}>
                 <img style={{width: '25px'}} src={ethan} alt="" />
               </div> 
               : null
-            }
+            } */}
 
             { otherPlayersHere.length != 0 ? otherPlayersHere.filter((p) => 
               p.position.x == x_offset+terrain.x && p.position.y == y_offset+terrain.y).map((p) => 

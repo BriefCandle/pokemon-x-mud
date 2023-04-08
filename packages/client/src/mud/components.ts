@@ -81,8 +81,38 @@ export const PokemonMoves = {value: Type.NumberArray};
 
 export const PokemonIDs = {value: Type.NumberArray};
 
+export const BattlePokemons = {value: Type.NumberArray};
+
 
 export const components = {
+  // ----- RNG components -----
+  RNGAction: defineNumberComponent(world, {
+    metadata: {contractId: "component.RNGAction"}
+  }),
+  RNGPrecommit: defineNumberComponent(world, {
+    metadata: {contractId: "component.RNGPrecommit"}
+  }),
+  RNGTarget: defineNumberComponent(world, {
+    metadata: {contractId: "component.RNGTarget"}
+  }),
+  // ----- PvP Battle components -----
+  BattleOffer: defineNumberComponent(world, {
+    metadata: {contractId: "component.BattleOffer"}
+  }),
+  BattleOfferTimestamp: defineNumberComponent(world, {
+    metadata: {contractId: "component.BattleOfferTimestamp"}
+  }),
+  // ----- Battle components: -----
+  BattlePokemons: defineComponent(world,
+    BattlePokemons,
+    {id: "BattlePokemons", metadata: {contractId: "component.BattlePokemons"}}
+  ),
+  BattleActionTimestamp: defineNumberComponent(world, {
+    metadata: {contractId: "component.BattleActionTimestamp"}
+  }),
+  TeamBattle: defineNumberComponent(world, {
+    metadata: {contractId: "component.TeamBattle"}
+  }),
   // ----- Team components: -----
   Team: defineComponent(world,
     {value: Type.Number},
