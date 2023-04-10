@@ -1,10 +1,11 @@
 import { ActiveComponent } from "../../useActiveComponent";
 import { useMUD } from "../../mud/MUDContext";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useObservableValue } from "@latticexyz/react";
 import { getComponentEntities, getEntitiesWithValue, getComponentValueStrict, getComponentValue, Has, ComponentValue, Type, EntityID, EntityIndex } from "@latticexyz/recs";
 import { useKeyboardMovement } from "../../useKeyboardMovement";
 import { BattlePlayerAction } from "./BattlePlayerAction";
+import { BattlePlayerTarget } from "./BattlePlayerTarget";
 import { ethers , BigNumber, utils} from 'ethers';
 import { toEthAddress } from "@latticexyz/utils";
 import { PokemonBasicInfo, getTeamPokemonInfo } from "../../mud/utils/pokemonInstance";
@@ -12,6 +13,12 @@ import { PokemonFrontBattle } from "../PokemonInstance/PokemonFrontBattle";
 import { PokemonBackBattle } from "../PokemonInstance/PokemonBackBattle";
 import { LoadPokemonImage, PokemonImageType } from "../PokemonInstance/loadPokemonImage";
 import { PokemonBasicInfoBar } from "../PokemonInstance/PokemonBasicInfoBar";
+import { BattleActionType } from "../../enum/battleActionType";
+import { BattlePlayerReveal } from "./BattlePlayerReveal";
+import { BattleBotAction } from "./BattkeBotAction";
+import { BattleBotReveal } from "./BattleBotReveal";
+import { useGetCommit, useGetNextPokemonID, useGetPlayerTeamIndex } from "../../mud/utils/useBattleTurn";
+import { BattleProvider } from "../../mud/utils/BattleContext";
 
 export const findFirstNotValue = (iterable: IterableIterator<any>, notValue: any): any=> {
   for (const element of iterable) {
@@ -26,18 +33,20 @@ export const RenderBattle = (props: {setActive: any, activeComponent: any, battl
   const {setActive, activeComponent, battleID} = props;
   
   const {
-    components: { Team, TeamBattle, TeamPokemons, BattlePokemons },
+    components: { Team, TeamBattle, TeamPokemons, BattlePokemons, RNGPrecommit },
     world,
     systems,
     playerEntityId,
   } = useMUD();
 
   // get all pokemon's basic info
-  
+  useObservableValue(RNGPrecommit.update$)
+  useObservableValue(BattlePokemons.update$)
+  console.log("render battle render")
+
   const battleIndex = world.getEntityIndexStrict(battleID);
   // get player team index
-  const teamIndexes = getEntitiesWithValue(Team, {value: playerEntityId} as ComponentValue<{value: any}>)?.values();
-  const player_teamIndex = teamIndexes.next().value;
+  const player_teamIndex = useGetPlayerTeamIndex();
 
   // get player team pokemons
   const player_pokemonIDs = getComponentValue(TeamPokemons, player_teamIndex)?.value as string[];
@@ -63,8 +72,8 @@ export const RenderBattle = (props: {setActive: any, activeComponent: any, battl
     else return undefined;
   })
 
-  console.log("player_pokemons_info", player_pokemons_info)
-  console.log("other_pokemons_info", other_pokemons_info)
+  // console.log("player_pokemons_info", player_pokemons_info)
+  // console.log("other_pokemons_info", other_pokemons_info)
 
   // get battleType
   const isPvE = () => {
@@ -76,21 +85,21 @@ export const RenderBattle = (props: {setActive: any, activeComponent: any, battl
   const isbattlePvE = isPvE();
 
   // get next pokemon
-  const battle_pokemonIDs = getComponentValue(BattlePokemons, battleIndex)?.value as string[];
-  const next_pokemonID = battle_pokemonIDs[0];
+  // const battle_pokemonIDs = getComponentValue(BattlePokemons, battleIndex)?.value as string[];
+  const next_pokemonID = useGetNextPokemonID(battleIndex)
 
   // determine if player is next turn
-  const isPlayerTurn = player_pokemonIDs.includes(next_pokemonID);
-  console.log("isPlayerTurn", isPlayerTurn)
+  // const isPlayerTurn = player_pokemonIDs.includes(next_pokemonID);
+  const player_turn_pokemon = player_pokemonIDs.indexOf(next_pokemonID)
+  console.log("player_turn_pokemon", player_turn_pokemon)
 
-  useEffect(() =>{
-    if (isPlayerTurn) {
-      setActive(ActiveComponent.battlePlayerAction)
-    }
-  }, [activeComponent])
-
-
-  console.log("battle_pokemonIDs", battle_pokemonIDs)
+  // determine if next pokemon has committed
+  const next_PokemonIndex = world.entityToIndex.get(next_pokemonID as EntityID)
+  // const commit_hex = getComponentValue(RNGPrecommit, next_PokemonIndex as EntityIndex)?.value;
+  // const commit = commit_hex ? BigNumber.from(commit_hex).toNumber() : undefined;
+  const commit = useGetCommit(next_pokemonID)
+  
+  console.log("commit", commit)
 
   // listen to pokemons's status (hp for now) from both teams
 
@@ -101,70 +110,64 @@ export const RenderBattle = (props: {setActive: any, activeComponent: any, battl
 
   // if it is not, determine if pvp, then wait for player's own turn;
   // if pve, calls system.battle 
-
-  // const teamIndexes = getEntitiesWithValue(Team, {value: playerEntityId} as ComponentValue<{value: any}>)?.values();
-  // const teamIndex = teamIndexes.next().value;
-  // const pokemonIDs = getComponentValue(TeamPokemons, teamIndex)?.value as string[]; //Type.NumberArray
-  // useObservableValue(TeamPokemons.update$);
-
-
-
   
-  // ----- key input functions -----
-  const [selectedItemIndex, setSelectedItemIndex] = useState(0);
+  const [selectedAction, setSelectedAction] = useState<BattleActionType>(0);
+  const [selectedTarget, setSelectedTarget] = useState(-1);
 
-  const press_up = useCallback(() => {
-    // setSelectedItemIndex((selectedItemIndex)=> 
-    //   selectedItemIndex === 0 ? selectedItemIndex : selectedItemIndex - 1)
-  },[])
+  useEffect(() =>{
+    if (player_turn_pokemon != -1) {
+      if (activeComponent != ActiveComponent.battlePlayerTarget && activeComponent != ActiveComponent.battlePlayerReveal) {
+        setActive(ActiveComponent.battlePlayerAction)
+      } 
+      // if (commit) {
+      //   setActive(ActiveComponent.battlePlayerReveal)
+      // }
+    } 
+  }, [activeComponent])
 
-  const press_down = useCallback(() => {
-    // setSelectedItemIndex((selectedItemIndex)=> 
-    //   selectedItemIndex === pokemonIDs.length - 1 ? selectedItemIndex : selectedItemIndex + 1)
-  },[])
-  const press_a = useCallback(() => {
-    return setActive(ActiveComponent.teamPokemonMenu);
-  }, []);
-
-  const press_b = () => { setActive(ActiveComponent.menu);}
-
-  const press_left = () => { return; };
-  const press_right = () => { return; };
-  const press_start = () => { return; };
-
-  useKeyboardMovement(activeComponent == ActiveComponent.battle, 
-    press_up, press_down, press_left, press_right, press_a, press_b, press_start)
-
-
-
+  console.log("activeComponent", activeComponent)
   return (
-    <>  
-      {/* { activeComponent == ActiveComponent.teamPokemon ? 
-      <TeamPokemon setActive={setActive} activeComponent={activeComponent} pokemonID={pokemonIDs[selectedItemIndex]}/> : null }
-       */}
-
-      {/* { activeComponent == ActiveComponent.teamSwitch ? 
-      <TeamSwitch setActive={setActive} activeComponent={activeComponent} preSelectedPokemonID={pokemonIDs[selectedItemIndex]}/> : null } 
-       */}
+    <BattleProvider>  
       <div className="battle">
         {/* <h1 style={{color: "black"}}>Battle</h1> */}
 
-        <div className="other-pokemon">
-          { other_pokemons_info.map((pokemon_info)=> (
-            <PokemonFrontBattle basicInfo={pokemon_info}/>
+        <div className="other-pokemons">
+          { other_pokemons_info.map((pokemon_info, index)=> (
+            <PokemonFrontBattle basicInfo={pokemon_info} selected={selectedTarget == index? true:false}/>
           ))}
         </div>
 
-        <div className="player-pokemon">
-        { player_pokemons_info.map((pokemon_info)=> (
-            <PokemonBackBattle basicInfo={pokemon_info} />
+        <div className="player-pokemons">
+        { player_pokemons_info.map((pokemon_info, index)=> (
+            <PokemonBackBattle basicInfo={pokemon_info} selected={player_turn_pokemon == index? true: false}/>
           ))}
         </div>
 
-        { activeComponent == ActiveComponent.battlePlayerAction ? 
-        <BattlePlayerAction setActive={setActive} activeComponent={activeComponent}/> : null }
+        { activeComponent == ActiveComponent.battlePlayerAction || 
+          activeComponent == ActiveComponent.battlePlayerTarget? 
+        <BattlePlayerAction 
+          setActive={setActive} activeComponent={activeComponent}
+          setSelectedAction={setSelectedAction} selectedAction={selectedAction}
+          pokemonID={next_pokemonID as EntityID} battleID={battleID as EntityID}
+        /> : null }
 
+        { activeComponent == ActiveComponent.battlePlayerTarget ? 
+        <BattlePlayerTarget 
+          setActive={setActive} activeComponent={activeComponent}
+          selectedAction={selectedAction}
+          setSelectedTarget={setSelectedTarget} selectedTarget={selectedTarget}
+          targetIDs={other_pokemonIDs as EntityID[]} battleID={battleID as EntityID}
+        /> : null }
 
+        {player_turn_pokemon !=-1 && commit ? 
+        <BattlePlayerReveal commit={commit} next_PokemonIndex={next_PokemonIndex} battleID={battleID}/> : null}
+
+        {/* {player_turn_pokemon ==-1 && isPvE() && !commit? 
+        <BattleBotAction battleID={battleID}/> : null} */}
+        <BattleBotAction battleID={battleID}/>
+
+        {player_turn_pokemon ==-1 && isPvE() && commit? 
+        <BattleBotReveal commit={commit} next_PokemonIndex={next_PokemonIndex} battleID={battleID}/> : null}
 
 
       </div>
@@ -186,14 +189,14 @@ export const RenderBattle = (props: {setActive: any, activeComponent: any, battl
           z-index: 20; /* Add this to set the z-index */
         }
 
-        .other-pokemon {
+        .other-pokemons {
           height: 100px;
           background-color: white;
           display: flex;
           justify-content: flex-end;
         }
 
-        .player-pokemon {
+        .player-pokemons {
           height: 100px;
           background-color: white;
           display: flex;
@@ -223,6 +226,6 @@ export const RenderBattle = (props: {setActive: any, activeComponent: any, battl
         }
       `}
       </style>
-    </>
+    </BattleProvider>
   )
 }

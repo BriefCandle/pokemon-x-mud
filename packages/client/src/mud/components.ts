@@ -86,8 +86,8 @@ export const BattlePokemons = {value: Type.NumberArray};
 
 export const components = {
   // ----- RNG components -----
-  RNGAction: defineNumberComponent(world, {
-    metadata: {contractId: "component.RNGAction"}
+  RNGActionType: defineNumberComponent(world, {
+    metadata: {contractId: "component.RNGActionType"}
   }),
   RNGPrecommit: defineNumberComponent(world, {
     metadata: {contractId: "component.RNGPrecommit"}

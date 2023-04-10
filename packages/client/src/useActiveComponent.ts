@@ -20,6 +20,7 @@ export enum ActiveComponent {
   "battle",
   "battlePlayerAction",
   "battlePlayerTarget",
+  "battlePlayerReveal",
   "battlePlayerWait"
 }
 

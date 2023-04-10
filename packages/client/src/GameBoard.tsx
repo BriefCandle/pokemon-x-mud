@@ -12,13 +12,14 @@ import { RenderTeam } from "./components/Menu/RenderTeam";
 export const GameBoard = () => {
 
   const {
-    components: { Player, Team, TeamBattle },
-    api: { spawnPlayer },
+    components: { Player, Team, TeamBattle, Position },
+    api: { spawnPlayer, respawn },
     playerEntityId,
     playerEntity,
   } = useMUD();
 
   const canSpawn = getComponentValue(Player, playerEntity)?.value !== true;
+  const canRespawn = getComponentValue(Position, playerEntity) ? false :true ;
 
   const teamIndexes = getEntitiesWithValue(Team, {value: playerEntityId} as ComponentValue<{value: any}>)?.values();
   const teamIndex = teamIndexes.next().value;
@@ -31,12 +32,13 @@ export const GameBoard = () => {
     // setActive(ActiveComponent.map);
     if (battleID === undefined) setActive(ActiveComponent.map);
     else setActive(ActiveComponent.battle);
-  }, []);
+  }, [battleID]);
       
   
   return (
     <div style={{ position: "relative", width: "500px", height: "400px", overflow: "hidden", border: "solid white 1px"}}>
       {canSpawn? <button onClick={spawnPlayer}>Spawn</button> : null}
+      {canRespawn? <button onClick={respawn}>Respawn</button> : null}
       
       { activeComponent == ActiveComponent.map || activeComponent == ActiveComponent.menu ||
 
@@ -57,7 +59,8 @@ export const GameBoard = () => {
         activeComponent == ActiveComponent.pcOwned || activeComponent == ActiveComponent.pcOwnedMenu ?
         (<PCOwned setActive={setActive} activeComponent={activeComponent} />) : null} */}
       
-      { activeComponent == ActiveComponent.battle || activeComponent == ActiveComponent.battlePlayerAction?
+      { activeComponent == ActiveComponent.battle || activeComponent == ActiveComponent.battlePlayerAction || 
+        activeComponent == ActiveComponent.battlePlayerTarget || activeComponent == ActiveComponent.battlePlayerReveal ?
         <RenderBattle setActive={setActive} activeComponent={activeComponent} battleID={battleID} /> : null}
 
     </div>

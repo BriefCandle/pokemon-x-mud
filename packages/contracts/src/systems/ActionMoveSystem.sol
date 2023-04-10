@@ -34,6 +34,7 @@ contract ActionMoveSystem is System {
     
     uint8 moveNumber = LibAction.actionToMoveNumber(action);
     uint256 moveID = LibPokemon.getMoves(components, attackerID)[moveNumber];
+    require(moveID != 0, "moveID not available");
 
     LibMove.executeMove(components, attackerID, targetID, moveID, randomness);
 

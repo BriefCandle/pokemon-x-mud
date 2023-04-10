@@ -9,6 +9,7 @@ import { createFaucetService } from "@latticexyz/network";
 import { ethers } from "ethers";
 import { GodID as singletonEntityId } from "@latticexyz/network";
 import { uuid } from "@latticexyz/utils";
+import { BattleActionType } from "../enum/battleActionType";
 
 
 export type SetupResult = Awaited<ReturnType<typeof setup>>;
@@ -109,6 +110,16 @@ export const setup = async () => {
     }
   }
 
+  const respawn = async () => {
+    try {
+      const bytes = new Uint8Array(0)
+      const tx = await result.systems["system.Respawn"].execute(bytes)
+      await tx.wait()
+    } finally {
+      console.log("player respawn")
+    }
+  }
+
   const assembleOldTeam = async (pokemonIDs: string[]) => {
     try {
       const tx = await result.systems["system.AssembleOldTeam"].executeTyped(pokemonIDs);
@@ -127,7 +138,16 @@ export const setup = async () => {
     }
   }
 
-  spawnPlayer();
+  const battle = async (battleID: string, targetID: string, action: BattleActionType) => {
+    try {
+      const tx = await result.systems["system.Battle"].executeTyped(battleID, targetID, action);
+      await tx.wait();
+    } finally {
+      console.log("battle action submitted")
+    }
+  }
+
+  // spawnPlayer();
 
   return {
     ...result,
@@ -145,8 +165,10 @@ export const setup = async () => {
       crawlTo,
       crawlBy,
       spawnPlayer,
+      respawn,
       assembleOldTeam,
-      assembelTeam
+      assembelTeam,
+      battle
     },
   };
 };

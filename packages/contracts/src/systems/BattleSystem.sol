@@ -24,9 +24,9 @@ contract BattleSystem is System {
   constructor(IWorld _world, address _components) System(_world, _components) { }
 
   function execute(bytes memory args) public returns (bytes memory) {
-    (uint256 pokemonID, uint256 targetID, BattleActionType action) = abi.decode(
+    (uint256 battleID, uint256 targetID, BattleActionType action) = abi.decode(
       args, (uint256, uint256, BattleActionType));
-    return executeTyped(pokemonID, targetID, action);
+    return executeTyped(battleID, targetID, action);
   }
 
   // 1) if pokemonNext's player is NOT battleSystemID, anyone can check last time action is executed, 
@@ -48,8 +48,11 @@ contract BattleSystem is System {
         uint256 playerID = addressToEntity(msg.sender);
         require(playerID == next_playerID, "Battle: not your battle");
         LibTeam.requirePlayerTeamHasPokemonID(components, playerID, pokemonNext); 
-        LibBattle.requireEnemyTeamHasTargetID(components, playerID, targetID); 
         LibAction.requireActionAvailable(components, battleID, action);
+
+        if (action != BattleActionType.Skip){
+          LibBattle.requireEnemyTeamHasTargetID(components, playerID, targetID); 
+        }
 
         _executeAction(pokemonNext, targetID, action, battleID);
       }

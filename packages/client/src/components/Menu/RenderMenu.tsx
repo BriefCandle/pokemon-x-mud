@@ -48,30 +48,6 @@ export const RenderMenu = (props: {setActive: any, activeComponent: any}) => {
 
   useKeyboardMovement(activeComponent == ActiveComponent.menu, 
     press_up, press_down, press_left, press_right, press_a, press_b, press_start)
-    
-  // useEffect(() => {
-  //   if (activeComponent == ActiveComponent.menu) {
-  //     const listener = (e: KeyboardEvent) => {  
-  //       if (e.key === "w") {
-  //         press_up();
-  //       }
-  //       if (e.key === "s") {
-  //         press_down();
-  //       }
-  //       if (e.key === "j") {
-  //         press_a();
-  //       }
-  //       if (e.key === "k") {
-  //         press_b();
-  //       }
-  //       if (e.key === "Enter") {
-  //         setActive(ActiveComponent.map);
-  //       }
-  //     };
-  //     window.addEventListener("keydown", listener);
-  //     return () => window.removeEventListener("keydown", listener);      
-  //    }
-  // }, [press_up, press_down]);
 
   
   return (

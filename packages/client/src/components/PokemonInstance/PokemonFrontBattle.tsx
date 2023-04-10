@@ -1,8 +1,8 @@
 import { LoadPokemonImage, PokemonImageType } from "./loadPokemonImage";
 import { PokemonBasicInfo, getTeamPokemonInfo } from "../../mud/utils/pokemonInstance";
 
-export const PokemonFrontBattle = (prop: {basicInfo: PokemonBasicInfo | undefined}) => {
-  const basicInfo = prop.basicInfo;
+export const PokemonFrontBattle = (prop: {basicInfo: PokemonBasicInfo | undefined, selected: boolean}) => {
+  const {basicInfo, selected} = prop;
   if (basicInfo === undefined) return null;
 
   const { level, hp, classIndex } = basicInfo;
@@ -10,7 +10,7 @@ export const PokemonFrontBattle = (prop: {basicInfo: PokemonBasicInfo | undefine
 
   return (
     <>
-    <div className="pokemon-front-battle">
+    <div className={`pokemon-front-battle ${selected? "selected" : ""}`}>
       <div className="pokemon-front-pic">
         <LoadPokemonImage classIndex={classIndex} imageType={PokemonImageType.front}/>
       </div>
@@ -37,6 +37,7 @@ export const PokemonFrontBattle = (prop: {basicInfo: PokemonBasicInfo | undefine
         flex-direction: column;
         margin: 5px;
         color: black;
+        font-size: 12px;
       }
       
       .pokemon-front-pic {
@@ -65,8 +66,8 @@ export const PokemonFrontBattle = (prop: {basicInfo: PokemonBasicInfo | undefine
       }
       
       .pokemon-health-bar {
-        width: 150px;
-        height: 12px;
+        width: 100px;
+        height: 10px;
         background-color: #e0e0e0;
         border-radius: 6px;
         overflow: hidden;
@@ -75,6 +76,11 @@ export const PokemonFrontBattle = (prop: {basicInfo: PokemonBasicInfo | undefine
       .pokemon-health-bar-inner {
         height: 100%;
         background-color: #00cc00;
+      }
+      
+      .selected {
+        color: #ffd700;
+        background-color: #585858;
       }
       
       `}

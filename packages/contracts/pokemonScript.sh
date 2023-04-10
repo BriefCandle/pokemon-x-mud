@@ -20,3 +20,6 @@ forge script script/parcel/CreateParcel01.s.sol:CreateParcel01Script --rpc-url h
 
 echo "Running command 7: Create Parcel at (1,1)"
 forge script script/parcel/CreateParcel11.s.sol:CreateParcel11Script --rpc-url http://localhost:8545 --broadcast
+
+echo "Running command 8: Create Dungeon at (1,1)"
+forge script script/CreateDungeon.s.sol:CreateDungeonScript --rpc-url http://localhost:8545 --broadcast
