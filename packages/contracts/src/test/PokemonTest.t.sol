@@ -11,7 +11,7 @@ import { LibTeam } from "../libraries/LibTeam.sol";
 import { LibRNG } from "../libraries/LibRNG.sol";
 import { LibArray } from "../libraries/LibArray.sol";
 import { LibPokemon } from "../libraries/LibPokemon.sol";
-
+import {LibMove} from "../libraries/LibMove.sol";
 
 import { BattleActionType } from "../BattleActionType.sol";
 import { PokemonStats } from "../components/PokemonStatsComponent.sol";
@@ -122,6 +122,16 @@ contract PokemonTest is MudTest {
     MoveEffect memory effect2 = MoveEffect(0,-1,0,0,0,0,0,0,0,0,0,MoveTarget.Foe, StatusCondition.None);
     createMoveClass(name2, info2, effect2);
 
+    // string memory name3 = 'Ember';
+    // MoveInfo memory info3 = MoveInfo(PokemonType.Fire, MoveCategory.Physical, 40, 25, 100);
+    // MoveEffect memory effect3 = MoveEffect(0,0,0,0,0,0,0,0,0,0,0,MoveTarget.Foe, StatusCondition.None);
+    // createMoveClass(name3, info3, effect3);
+
+    // string memory name4 = 'Vine Whip';
+    // MoveInfo memory info4 = MoveInfo(PokemonType.Grass, MoveCategory.Physical, 50, 25, 100);
+    // MoveEffect memory effect4 = MoveEffect(0,0,0,0,0,0,0,0,0,0,0,MoveTarget.Foe, StatusCondition.None);
+    // createMoveClass(name4, info4, effect4);
+
     // Bulbasaur pokemon class
     uint32 baseExp = 64;
     PokemonStats memory baseStats = PokemonStats(45,49,49,65,65,45);
@@ -134,39 +144,40 @@ contract PokemonTest is MudTest {
     uint256 pokemonClassID = getPokemonClassIDFromIndex(index);
     uint256 moveID = getMoveIDFromName(name);
     uint256 moveID2 = getMoveIDFromName(name2);
+    // uint256 moveID3 = getMoveIDFromName(name3);
     uint256[] memory moves = new uint256[](2);
     moves[0] = moveID;
     moves[1] = moveID2;
+    // moves[3] = moveID3;
     connectPokemonMoves(pokemonClassID, moves);
 
-    // ivysaur
-    baseExp = 141;
-    baseStats = PokemonStats(60,62,63,80,80,60);
-    eV = PokemonStats(0,0,0,1,1,0);
-    classInfo = PokemonClassInfo(45,PokemonType.Grass,PokemonType.Poison,LevelRate.MediumSlow);
-    index = 2;
-    createPokemonClass(baseExp, baseStats, eV, classInfo, index);
+    // // ivysaur
+    // baseExp = 141;
+    // baseStats = PokemonStats(60,62,63,80,80,60);
+    // eV = PokemonStats(0,0,0,1,1,0);
+    // classInfo = PokemonClassInfo(45,PokemonType.Grass,PokemonType.Poison,LevelRate.MediumSlow);
+    // index = 2;
+    // createPokemonClass(baseExp, baseStats, eV, classInfo, index);
 
-    pokemonClassID = getPokemonClassIDFromIndex(index);
-    connectPokemonMoves(pokemonClassID, moves);
+    // pokemonClassID = getPokemonClassIDFromIndex(index);
+    // connectPokemonMoves(pokemonClassID, moves);
 
+    // // Vensaur
+    // baseExp = 208;
+    // baseStats = PokemonStats(80,82,83,100,100,80);
+    // eV = PokemonStats(0,0,0,2,1,0);
+    // classInfo = PokemonClassInfo(45,PokemonType.Grass,PokemonType.Poison,LevelRate.MediumSlow);
+    // index = 3;
+    // createPokemonClass(baseExp, baseStats, eV, classInfo, index);
 
-    // Vensaur
-    baseExp = 208;
-    baseStats = PokemonStats(80,82,83,100,100,80);
-    eV = PokemonStats(0,0,0,2,1,0);
-    classInfo = PokemonClassInfo(45,PokemonType.Grass,PokemonType.Poison,LevelRate.MediumSlow);
-    index = 3;
-    createPokemonClass(baseExp, baseStats, eV, classInfo, index);
-
-    pokemonClassID = getPokemonClassIDFromIndex(index);
-    connectPokemonMoves(pokemonClassID, moves);
+    // pokemonClassID = getPokemonClassIDFromIndex(index);
+    // connectPokemonMoves(pokemonClassID, moves);
 
     // Charmander
     baseExp = 65;
-    baseStats = PokemonStats(39,52,43,60,50,65);
+    baseStats = PokemonStats(39,52,43,60,50,65); //PokemonStats(39,52,43,60,50,65);
     eV = PokemonStats(0,0,0,0,0,1);
-    classInfo = PokemonClassInfo(45,PokemonType.Fire,PokemonType.None,LevelRate.MediumSlow);
+    classInfo = PokemonClassInfo(45,PokemonType.Fire,PokemonType.Fire,LevelRate.MediumSlow);
     index = 4;
     createPokemonClass(baseExp, baseStats, eV, classInfo, index);
 
@@ -279,6 +290,9 @@ contract PokemonTest is MudTest {
       } else {
         targetID = LibBattle.playerIDToEnemyPokemons(components, BattleSystemID)[0];
       }
+      uint256 moveID = LibPokemon.getPokemonMoveID(components, nextPokemon, 0);
+      uint32 dmg = LibMove.calculateMoveEffectOnHP(components, nextPokemon, targetID, moveID, 255);
+      console.log("expected dmg is: ", dmg);
       executeBattle(battleID, targetID, BattleActionType.Move0, alice); 
       vm.roll(block.number + LibRNG.WAIT_BLOCKS + 1);
       executeBattle(battleID, targetID, BattleActionType.Move0, alice); 
@@ -306,6 +320,9 @@ contract PokemonTest is MudTest {
       if (LibArray.isValueInArray(nextPokemon, player1_PokemonIDs)) {
         targetID = LibBattle.playerIDToEnemyPokemons(components, player1_ID)[0];
         console.log("player: ", player1, "attacks pokemon ", targetID);
+        uint256 moveID = LibPokemon.getPokemonMoveID(components, nextPokemon, 0);
+        uint32 dmg = LibMove.calculateMoveEffectOnHP(components, nextPokemon, targetID, moveID, 255);
+        console.log("expected dmg is: ", dmg);
         executeBattle(battleID, targetID, BattleActionType.Move0, player1);
         vm.roll(block.number + LibRNG.WAIT_BLOCKS + 1);
         executeBattle(battleID, targetID, BattleActionType.Move0, player1);
@@ -313,6 +330,9 @@ contract PokemonTest is MudTest {
       } else {
         targetID = LibBattle.playerIDToEnemyPokemons(components, player2_ID)[0];
         console.log("player: ", player2, "attacks pokemon ", targetID);
+        uint256 moveID = LibPokemon.getPokemonMoveID(components, nextPokemon, 0);
+        uint32 dmg = LibMove.calculateMoveEffectOnHP(components, nextPokemon, targetID, moveID, 255);
+        console.log("expected dmg is: ", dmg);
         executeBattle(battleID, targetID, BattleActionType.Move0, player2);
         vm.roll(block.number + LibRNG.WAIT_BLOCKS + 1);
         executeBattle(battleID, targetID, BattleActionType.Move0, player2);

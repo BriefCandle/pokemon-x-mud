@@ -20,26 +20,41 @@ import { MoveEffect } from "../src/components/MoveEffectComponent.sol";
 
 contract ConnectPokemonMovesScript is PokemonScript {
 
-  uint256 pokemonIndex;
-  string[] moveNames;
+  uint256[] pokemonIndexes;
+  string[][] moveNames_array;
 
   function run() public {
     vm.startBroadcast(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80);
 
     setup();
+    pokemonIndexes = [1,2,3,4,5,6];
+    moveNames_array = [
+      ["Tackle", "Growl", "Vine Whip"],
+      ["Tackle", "Growl", "Vine Whip"],
+      ["Tackle", "Growl", "Vine Whip"],
+      ["Tackle", "Growl", "Ember"],
+      ["Tackle", "Growl", "Ember"],
+      ["Tackle", "Growl", "Ember"]
+    ];
 
-    pokemonIndex = 1;
-    moveNames = ["Tackle", "Growl"];
+    for (uint j=0; j<pokemonIndexes.length; j++) {
+      uint256 pokemonIndex = pokemonIndexes[j];
+      string[] memory moveNames = moveNames_array[j];
 
-    uint256[] memory moveIDs = new uint256[](moveNames.length);
-    uint256 pokemonID = getPokemonIDFromIndex(pokemonIndex);
-    for(uint i=0; i<moveNames.length; i++) {
-      moveIDs[i] = getMoveIDFromName(moveNames[i]);
+      uint256[] memory moveIDs = new uint256[](moveNames.length);
+      uint256 pokemonID = getPokemonIDFromIndex(pokemonIndex);
+      for(uint i=0; i<moveNames.length; i++) {
+        moveIDs[i] = getMoveIDFromName(moveNames[i]);
+      }
+
+      ConnectPokemonMovesSystem(system(ConnectPokemonMovesSystemID)).executeTyped(pokemonID, moveIDs);
+
     }
 
-    ConnectPokemonMovesSystem(system(ConnectPokemonMovesSystemID)).executeTyped(pokemonID, moveIDs);
+
 
     vm.stopBroadcast();
+    
   }
 
   function getPokemonIDFromIndex(uint256 index) private view returns (uint256 pokemonID){

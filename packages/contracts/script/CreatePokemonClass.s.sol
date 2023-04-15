@@ -14,11 +14,11 @@ import { PokemonClassInfo } from "../src/components/ClassInfoComponent.sol";
 
 contract CreatePokemonClassScript is PokemonScript {
 
-  uint32[3] baseExp_array;
-  PokemonStats[3] bs_array;
-  PokemonStats[3] ev_array;
-  PokemonClassInfo[3] pci_array;
-  uint32[3] iArray;
+  uint32[6] baseExp_array;
+  PokemonStats[6] bs_array;
+  PokemonStats[6] ev_array;
+  PokemonClassInfo[6] pci_array;
+  uint32[6] iArray;
 
 
   function run() public {
@@ -27,21 +27,30 @@ contract CreatePokemonClassScript is PokemonScript {
     
     setup();
 
-    baseExp_array = [64, 142, 263];
+    baseExp_array = [64, 142, 263, 62, 142, 267];
 
     bs_array[0] = PokemonStats(45,49,49,65,65,45);
     bs_array[1] = PokemonStats(60,62,63,80,80,60);
     bs_array[2] = PokemonStats(80,82,83,100,100,80);
+    bs_array[3] = PokemonStats(39,52,43,60,50,65);
+    bs_array[4] = PokemonStats(58,64,58,80,65,80);
+    bs_array[5] = PokemonStats(78,84,78,109,85,100);
 
     ev_array[0] = PokemonStats(0,0,0,1,0,0);
     ev_array[1] = PokemonStats(0,0,0,1,1,0);
     ev_array[2] = PokemonStats(0,0,0,2,1,0);
+    ev_array[3] = PokemonStats(0,0,0,0,0,1);
+    ev_array[4] = PokemonStats(0,0,0,1,0,1);
+    ev_array[5] = PokemonStats(0,0,0,3,0,0);
 
     pci_array[0] = PokemonClassInfo(45,PokemonType.Grass,PokemonType.Poison,LevelRate.MediumSlow);
     pci_array[1] = PokemonClassInfo(45,PokemonType.Grass,PokemonType.Poison,LevelRate.MediumSlow);
     pci_array[2] = PokemonClassInfo(45,PokemonType.Grass,PokemonType.Poison,LevelRate.MediumSlow);
+    pci_array[3] = PokemonClassInfo(45,PokemonType.Fire,PokemonType.Fire,LevelRate.MediumSlow);
+    pci_array[4] = PokemonClassInfo(45,PokemonType.Fire,PokemonType.Fire,LevelRate.MediumSlow);
+    pci_array[5] = PokemonClassInfo(45,PokemonType.Fire,PokemonType.Flying,LevelRate.MediumSlow);
 
-    iArray = [1,2,3];
+    iArray = [1,2,3,4,5,6];
 
 
     for(uint i=0; i<bs_array.length; i++) {

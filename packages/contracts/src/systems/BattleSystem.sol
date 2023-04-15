@@ -82,6 +82,10 @@ contract BattleSystem is System {
         // LibBattle.resetDonePokemon(components, battleID);
       } else {
         
+        uint8 moveNumber = LibAction.actionToMoveNumber(action);
+        uint256 moveID = LibPokemon.getMoves(components, attackerID)[moveNumber];
+        require(moveID != 0, "moveID not available");
+        
         LibRNG.commit(components, attackerID, action, targetID); 
         return;
       }

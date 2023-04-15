@@ -1,16 +1,25 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMUD } from "../../mud/MUDContext";
 import { useComponentValue, useEntityQuery, useObservableValue } from "@latticexyz/react";
 // import { useKeyboardMovement } from "../../useKeyboardMovement";
 import { useParcels } from "./useParcels";
 import { parcelHeight, parcelWidth, terrainWidth, terrainHeight, InteractTerrainType } from "../../enum/terrainTypes";
-import { getComponentEntities, getComponentValueStrict, getComponentValue, getEntitiesWithValue, Has, ComponentValue, Type } from "@latticexyz/recs";
-import ethan from "../../assets/player/ethan.png";
+import { getComponentEntities, getComponentValueStrict, getComponentValue, getEntitiesWithValue, Has, HasValue, ComponentValue, Type, EntityID, EntityIndex } from "@latticexyz/recs";
+import ethan_up from "../../assets/player/ethan_up.png";
+import ethan_down from "../../assets/player/ethan_down.png";
+import ethan_left from "../../assets/player/ethan_left.png";
+import ethan_right from "../../assets/player/ethan_right.png";
 import { RenderTerrain } from "./RenderTerrain";
-import { ActiveComponent } from "../../useActiveComponent";
+import { ActiveComponent, useActiveComponent } from "../../useActiveComponent";
 import { useKeyboardMovement } from "../../useKeyboardMovement";
 import { RenderMenu } from "../Menu/RenderMenu";
 import { PCOwned } from "../PC/PCOwned";
+import { OtherPlayerMenu } from "../OtherPlayer/OtherPlayerMenu";
+import { RenderTeam } from "../Menu/RenderTeam";
+import { OfferorWait } from "../OtherPlayer/OfferorWait";
+import { OffereeMenu } from "../OtherPlayer/OffereeMenu";
+import { TerrainConsole } from "./TerrainConsole";
+import { useMapContext } from "../../mud/utils/MapContext";
 
 export enum PlayerDirection {
   Up,
@@ -34,29 +43,50 @@ export const getInteractCoord = (coord: {x: number, y: number}, direction: Playe
   }
 }
 
-export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
-  const {setActive, activeComponent} = props;
+const getEthanPNG = (direction: PlayerDirection) : any => {
+  switch (direction) {
+    case PlayerDirection.Up:
+      return ethan_up;
+    case PlayerDirection.Down:
+      return ethan_down;
+    case PlayerDirection.Left:
+      return ethan_left;
+    case PlayerDirection.Right:
+      return ethan_right;
+  }
+}
+
+export const RenderMap = () => {
 
   const {
-    components: { Position, Player, TerrainPC, TerrainNurse, TerrainSpawn },
+    components: { Position, Player, TerrainPC, TerrainNurse, TerrainSpawn, BattleOffer, Team },
     api: { crawlBy },
     playerEntity,
+    playerEntityId
   } = useMUD();
 
-  const getTerrainType = (position: {x: number, y: number}): InteractTerrainType => {
-    const positionIndex = getEntitiesWithValue(Position, position as ComponentValue<{x: Type.Number, y: Type.Number}>)?.values().next().value;
-    if (getComponentValue(TerrainPC, positionIndex)?.value) return InteractTerrainType.PC;
-    if ((getComponentValue(TerrainNurse, positionIndex)?.value)) return InteractTerrainType.Nurse;
-    if ((getComponentValue(TerrainSpawn, positionIndex)?.value)) return InteractTerrainType.Spawn;
-    return InteractTerrainType.None;
-  }
-
+  const { activeComponent, setActive, interactCoord, setInteractCoord, thatPlayerIndex, setThatPlayerIndex} = useMapContext();
+  
   const playerPosition = useComponentValue(Position, playerEntity);
-  const x_coord = playerPosition?.x;
-  const y_coord = playerPosition?.y;
-
 
   const [playerDirection, setPlayerDirection] = useState<PlayerDirection>(PlayerDirection.Up);
+
+
+  // ------ battle offer ------
+  const isOfferor = useComponentValue(BattleOffer, playerEntity)?.value !== undefined;
+  const isOfferee = useEntityQuery([HasValue(BattleOffer, {value: playerEntityId})]).length !==0;
+
+  useEffect(() => {
+    setActive(ActiveComponent.map);
+  },[]);
+  
+  useEffect(() => {
+    if (isOfferor && activeComponent == ActiveComponent.map) return setActive(ActiveComponent.offerorWait)
+    if (isOfferee && activeComponent == ActiveComponent.map) return setActive(ActiveComponent.offereeMenu)
+  }, [isOfferor, isOfferee, activeComponent]);
+
+
+  // ------ key inputs ------
   const press_up = () => {
     setPlayerDirection(PlayerDirection.Up);
     crawlBy(0, -1);}
@@ -73,39 +103,34 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
     setPlayerDirection(PlayerDirection.Right);
     crawlBy(1, 0);}
   
-  const interactCoord = playerPosition ? getInteractCoord(playerPosition, playerDirection) : undefined;
-
-  const press_a = () => {
-    if (x_coord !== undefined && y_coord !== undefined && interactCoord !== undefined) {
-      const terrainType = getTerrainType(interactCoord);
-      console.log(playerPosition)
-      // console.log("terrainType is: ", terrainType);
-      switch (terrainType) {
-        case InteractTerrainType.PC:
-          setActive(ActiveComponent.pcOwned);
-          return;
-        default:
-          return;
-      }
+  const press_a = useCallback(() => {
+    if (playerPosition !== undefined && playerDirection !== undefined) {
+      const coord = getInteractCoord(playerPosition, playerDirection)
+      console.log("coord", coord)
+      setInteractCoord(coord)
+      setActive(ActiveComponent.terrainConsole)
     }
-  }
+  },[interactCoord, playerDirection, playerPosition])
+
   
   const press_b = () => {return;}
   const press_start = () => setActive(ActiveComponent.menu);
 
   useKeyboardMovement(activeComponent == ActiveComponent.map, 
     press_up, press_down, press_left, press_right, press_a, press_b, press_start)
-    
+  
+  
+  // ------ other players ------
   useObservableValue(Position.update$)
+  
   const otherPlayers = useEntityQuery([Has(Player), Has(Position)])
     .filter((entity) => entity != playerEntity)
     .map((entity) => {
       const position = getComponentValueStrict(Position, entity);
       return {entity, position}
-    })
+  })
   
-  
-    // makes player always center of the map
+  // ------ makes player always center of the map ------
   const mapRef = useRef(null);
   useEffect(() => {
     if (playerPosition){      
@@ -122,7 +147,6 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
       mapContainer?.style.setProperty('transform', `translate(${xTranslate}px, ${yTranslate}px)`);}
   }, [playerPosition])
   
-
   const parcels = useParcels();
 
   const RenderPlayer = (props: {entity: any, player_position: {x: number, y:number}, 
@@ -133,19 +157,15 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
     const y_offset = parcel_position.y * parcelHeight;
     const x_player = player_position.x - x_offset;
     const y_player = player_position.y - y_offset;
-    // console.log("player",x_player, y_player)
-    // console.log("parcel",parcel_position.x, parcel_position.y)
-    // console.log("terrain", terrain_position.x, terrain_position.y)
     
     return (
       <>
         {x_player === terrain_position.x && y_player === terrain_position.y ? 
           <div style={{zIndex: 1, position: 'absolute'}} key={`${entity},${x_player}, ${y_player}}`}>
-            <img style={{width: '25px'}} src={ethan} alt="" />
+            <img style={{width: '45px', height: "35px"}} src={getEthanPNG(playerDirection)} alt="" />
           </div>  : null}
       </>
     )
-
   }
 
   const RenderParcel = (parcel: any, index: any) => {
@@ -187,7 +207,7 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
             { otherPlayersHere.length != 0 ? otherPlayersHere.filter((p) => 
               p.position.x == x_offset+terrain.x && p.position.y == y_offset+terrain.y).map((p) => 
                 (<div style={{zIndex: 1, position: 'absolute'}} key={p.entity}>
-                  <img style={{width: '25px'}} src={ethan} alt="" />
+                  <img style={{width: '45px', height: "35px"}} src={ethan_down} alt="" />
                 </div>))
             : null
             }
@@ -200,17 +220,41 @@ export const RenderMap = (props: {setActive: any, activeComponent: any}) => {
 
   return (
     <>
+      { activeComponent == ActiveComponent.offerorWait ?
+        <OfferorWait /> : null}
+    
+      { activeComponent == ActiveComponent.offereeMenu ?
+        <OffereeMenu /> : null}
+
+      { activeComponent == ActiveComponent.otherPlayerMenu ?
+        <OtherPlayerMenu/> : null
+      }
+
+
       { activeComponent == ActiveComponent.pc || activeComponent == ActiveComponent.pcTeam || 
         activeComponent == ActiveComponent.pcTeamMenu || activeComponent == ActiveComponent.pcTeamSelect || 
-        activeComponent == ActiveComponent.pcOwned || activeComponent == ActiveComponent.pcOwnedMenu ?
-        (<PCOwned setActive={setActive} activeComponent={activeComponent} pc_coord={interactCoord}/>) : null}
+        activeComponent == ActiveComponent.pcOwned || activeComponent == ActiveComponent.pcOwnedMenu 
+        ?
+        (<PCOwned />) : null}
+      
+
+      { activeComponent == ActiveComponent.team || activeComponent == ActiveComponent.teamPokemonMenu ||
+        activeComponent == ActiveComponent.teamPokemon || activeComponent == ActiveComponent.teamSwitch ? 
+        <RenderTeam /> : null}
+
 
       { activeComponent == ActiveComponent.menu ?
-        <RenderMenu setActive={setActive} activeComponent={activeComponent} /> : null}
+        <RenderMenu /> : null}
 
-      <div ref={mapRef}>
-        {parcels.map(RenderParcel)}
-      </div>
+
+      { activeComponent == ActiveComponent.terrainConsole ? 
+        <TerrainConsole otherPlayers={otherPlayers} /> : null}
+      
+
+      {      
+        <div ref={mapRef}>
+          {parcels.map(RenderParcel)}
+        </div>}
     </>
   )
   

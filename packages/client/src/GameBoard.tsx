@@ -1,68 +1,88 @@
 import { useEffect, useRef, useState } from "react";
 import { useMUD } from "./mud/MUDContext";
 
-import { getComponentEntities, getComponentValueStrict, getEntitiesWithValue, getComponentValue, Has, ComponentValue, EntityID } from "@latticexyz/recs";
+import { getComponentEntities, getComponentValueStrict, getEntitiesWithValue, getComponentValue, Has, ComponentValue, EntityID, HasValue } from "@latticexyz/recs";
 import { RenderMap } from "./components/Map/RenderMap";
 import { RenderMenu } from "./components/Menu/RenderMenu";
 import { RenderBattle } from "./components/Battle/RenderBattle";
-
+import { useComponentValue, useEntityQuery } from "@latticexyz/react";
 import { ActiveComponent, useActiveComponent } from "./useActiveComponent";
 import { RenderTeam } from "./components/Menu/RenderTeam";
+import { BattleProvider } from "./mud/utils/BattleContext";
+import { MapProvider } from "./mud/utils/MapContext";
+import { BattleLoadingScreen } from "./components/Battle/BattleLoadingScreen";
+import { SpawnPlayer } from "./components/Spawn/SpawnPlayer";
+import { RespawnPlayer } from "./components/Spawn/RespawnPlayer";
 
 export const GameBoard = () => {
 
   const {
-    components: { Player, Team, TeamBattle, Position },
+    components: { Player, Team, TeamBattle, Position, BattleOffer },
     api: { spawnPlayer, respawn },
     playerEntityId,
     playerEntity,
   } = useMUD();
 
-  const canSpawn = getComponentValue(Player, playerEntity)?.value !== true;
-  const canRespawn = getComponentValue(Position, playerEntity) ? false :true ;
+  const canSpawn = useComponentValue(Player, playerEntity)?.value !== true;
+  const canRespawn = useComponentValue(Position, playerEntity) ? false :true ;
 
   const teamIndexes = getEntitiesWithValue(Team, {value: playerEntityId} as ComponentValue<{value: any}>)?.values();
   const teamIndex = teamIndexes.next().value;
-  const battleID = getComponentValue(TeamBattle, teamIndex)?.value;
-  console.log("isBattle", battleID)
+  const battleID = useComponentValue(TeamBattle, teamIndex)?.value;
 
-  const { activeComponent, setActive } = useActiveComponent();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // setActive(ActiveComponent.map);
-    if (battleID === undefined) setActive(ActiveComponent.map);
-    else setActive(ActiveComponent.battle);
-  }, [battleID]);
-      
+    if (battleID !== undefined) {
+      console.log("test")
+      setIsLoading(true);
+    }
+  },[battleID])
+
+  const handleTransitionComplete = () => {
+    setIsLoading(false);
+  };
+
   
   return (
-    <div style={{ position: "relative", width: "500px", height: "400px", overflow: "hidden", border: "solid white 1px"}}>
-      {canSpawn? <button onClick={spawnPlayer}>Spawn</button> : null}
-      {canRespawn? <button onClick={respawn}>Respawn</button> : null}
+    <>
+    <div style={{ position: "relative", width: "500px", height: "350px", overflow: "hidden", border: "solid white 1px"}}>
+      {canSpawn ? <SpawnPlayer /> : null}
+      {!canSpawn && canRespawn? <RespawnPlayer /> : null}
       
-      { activeComponent == ActiveComponent.map || activeComponent == ActiveComponent.menu ||
+      {/* {isLoading && <BattleLoadingScreen onTransitionComplete={handleTransitionComplete}/>} */}
 
-      activeComponent == ActiveComponent.pc || activeComponent == ActiveComponent.pcTeam || 
-      activeComponent == ActiveComponent.pcTeamMenu || activeComponent == ActiveComponent.pcTeamSelect || 
-      activeComponent == ActiveComponent.pcOwned || activeComponent == ActiveComponent.pcOwnedMenu ?
-        (<RenderMap setActive={setActive} activeComponent={activeComponent} />) : null}
-
-      {/* { activeComponent == ActiveComponent.menu ?
-        <RenderMenu setActive={setActive} activeComponent={activeComponent} /> : null} */}
-
-      { activeComponent == ActiveComponent.team || activeComponent == ActiveComponent.teamPokemonMenu ||
-        activeComponent == ActiveComponent.teamPokemon || activeComponent == ActiveComponent.teamSwitch ? 
-        <RenderTeam setActive={setActive} activeComponent={activeComponent} /> : null}
-
-      {/* { activeComponent == ActiveComponent.pc || activeComponent == ActiveComponent.pcTeam || 
-        activeComponent == ActiveComponent.pcTeamMenu || activeComponent == ActiveComponent.pcTeamSelect || 
-        activeComponent == ActiveComponent.pcOwned || activeComponent == ActiveComponent.pcOwnedMenu ?
-        (<PCOwned setActive={setActive} activeComponent={activeComponent} />) : null} */}
+      { !canSpawn && !canRespawn && !battleID ? 
+        <MapProvider>
+          <RenderMap/>
+        </MapProvider> : null}
       
-      { activeComponent == ActiveComponent.battle || activeComponent == ActiveComponent.battlePlayerAction || 
-        activeComponent == ActiveComponent.battlePlayerTarget || activeComponent == ActiveComponent.battlePlayerReveal ?
-        <RenderBattle setActive={setActive} activeComponent={activeComponent} battleID={battleID} /> : null}
+      { battleID ?
+        <BattleProvider battleID={battleID} playerEntityId={playerEntityId}>
+          <RenderBattle /> 
+        </BattleProvider>: null}
 
     </div>
+    <style>
+      {`
+        .player-console {
+          height: 100px;
+          position: absolute;
+          width: 100%;
+          bottom: 0;
+          background-color: white;
+          color: black;
+          display: flex;
+          justify-content: space-between;
+          z-index: 10;
+          border: 4px solid #585858;
+          padding: 8px;
+          border-radius: 12px;
+          box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+        }
+      `}
+    </style>
+    </>
+
   )
 }

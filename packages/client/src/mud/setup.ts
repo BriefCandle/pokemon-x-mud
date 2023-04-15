@@ -81,7 +81,6 @@ export const setup = async () => {
     try {
       const tx = await result.systems["system.Crawl"].executeTyped({ x, y });
       await tx.wait();
-
     } finally {
       components.Position.removeOverride(positionId);
     }
@@ -90,22 +89,23 @@ export const setup = async () => {
   const crawlBy = async (deltaX: number, deltaY: number) => {
     const playerPosition = getComponentValue(components.Position, playerEntity);
     if (!playerPosition) {
-      console.warn("cannot moveBy without a player position, not yet spawned?");
+      console.warn("csetup: annot moveBy without a player position, not yet spawned?");
       return;
     }
     await crawlTo(playerPosition.x + deltaX, playerPosition.y + deltaY);
   };
 
-  const spawnPlayer = async () => {
-    const pokemonIndex = 1;
+  const spawnPlayer = async (pokemonIndex: number) => {
+    // const pokemonIndex = 1;
     const canSpawn = getComponentValue(components.Player, playerEntity)?.value !== true;
     if (!canSpawn) {
-      throw new Error("already joined game");
+      throw new Error("setup: already joined game");
     }
     try {
       const tx = await result.systems["system.SpawnPlayer"].executeTyped(pokemonIndex);
       await tx.wait();
     } finally {
+      console.log("setup: player spawn")
       // components.Position.removeOverride(positionId);
     }
   }
@@ -116,7 +116,17 @@ export const setup = async () => {
       const tx = await result.systems["system.Respawn"].execute(bytes)
       await tx.wait()
     } finally {
-      console.log("player respawn")
+      console.log("setup: player respawn")
+    }
+  }
+
+  const logout = async () => {
+    try {
+      const bytes = new Uint8Array(0);
+      const tx = await result.systems["system.Logout"].execute(bytes)
+      await tx.wait()
+    } finally {
+      console.log("setup: player logout")
     }
   }
 
@@ -125,7 +135,7 @@ export const setup = async () => {
       const tx = await result.systems["system.AssembleOldTeam"].executeTyped(pokemonIDs);
       await tx.wait();
     } finally {
-      console.log("old team reassembled")
+      console.log("setup: old team reassembled")
     }
   }
 
@@ -134,18 +144,59 @@ export const setup = async () => {
       const tx = await result.systems["system.AssembleTeam"].executeTyped(pokemonIDs, pc_coord);
       await tx.wait();
     } finally {
-      console.log("team reassembled")
+      console.log("setup: team reassembled")
     }
   }
 
+  const restoreTeamHP = async (nurse_coord: {x:number, y:number}) => {
+    try {
+      const tx = await result.systems["system.RestoreTeamHP"].executeTyped(nurse_coord);
+      await tx.wait();
+    } finally {
+      console.log("setup: teamHP restored");
+    }
+  }
+  
   const battle = async (battleID: string, targetID: string, action: BattleActionType) => {
     try {
       const tx = await result.systems["system.Battle"].executeTyped(battleID, targetID, action);
       await tx.wait();
     } finally {
-      console.log("battle action submitted")
+      console.log("setup: battle action submitted")
     }
   }
+
+  const battleOffer = async (offereeID: string) => {
+    try {
+      const tx = await result.systems["system.BattleOffer"].executeTyped(offereeID);
+      await tx.wait();
+    } finally {
+      console.log("setup: battle offer submitted")
+    }
+  }
+
+  const battleAccept = async () => {
+    try {
+      const bytes = new Uint8Array(0)
+      const tx = await result.systems["system.BattleAccept"].execute(bytes);
+      await tx.wait();
+    } finally {
+      console.log("setup: battle accept submitted")
+    }
+  }
+
+  const battleDecline = async (offereeID: string) => {
+    try {
+      const tx = await result.systems["system.BattleDecline"].executeTyped(offereeID);
+      await tx.wait();
+    } finally {
+      console.log("setup: battle decline submitted")
+    }
+  }
+
+
+
+
 
   // spawnPlayer();
 
@@ -166,9 +217,14 @@ export const setup = async () => {
       crawlBy,
       spawnPlayer,
       respawn,
+      logout,
       assembleOldTeam,
       assembelTeam,
-      battle
+      restoreTeamHP,
+      battle,
+      battleOffer,
+      battleAccept,
+      battleDecline
     },
   };
 };

@@ -232,9 +232,10 @@ library LibPokemon {
   function getDefaultMoves(IUint256Component components, uint256 pokemonClassID, uint32 level) internal view returns (uint256[4] memory moves) {
     MoveLevelPokemonComponent moveLevelC = MoveLevelPokemonComponent(getAddressById(components, MoveLevelPokemonComponentID));
     uint256[] memory moveLevel = moveLevelC.getValue(pokemonClassID);
-    // a temporary solution for now....
+    // TODO: a temporary solution for now....
     moves[0] = moveLevel[0];
     moves[1] = moveLevel[1];
+    moves[2] = moveLevel[2];
   }
 
 

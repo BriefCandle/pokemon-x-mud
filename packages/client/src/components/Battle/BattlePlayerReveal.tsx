@@ -8,41 +8,66 @@ import { BattleActionType } from "../../enum/battleActionType";
 import { useBlockNumber } from "../../mud/utils/useBlockNumber";
 import { BlockLeft } from "./BlockLeft";
 import { useGetBattleID } from "../../mud/utils/useBattleTurn";
+import { useBattleContext } from "../../mud/utils/BattleContext";
+import { pokemonIndexToMoveNames } from "../../mud/utils/pokemonInstance";
 
 
-export const wait_block = 20;
+export const wait_block = 10;
 
-export const BattlePlayerReveal = (props: {commit: number, next_PokemonIndex: any, battleID: any}) => {
-  const {commit, next_PokemonIndex, battleID} = props;
+// display waiting circle & waiting message
+export const BattlePlayerReveal = () => {
 
   const {
     world,
     components: {RNGActionType, RNGTarget},
     api: { battle },
   } = useMUD();
-  
+
+  const {battleID, player_turn_pokemon, next_pokemonID, commit, setMessage, setActive, setSelectedAction, selectedAction, setSelectedTarget, selectedTarget, activeComponent,
+  isBusy, setIsBusy} = useBattleContext();
+
   const blockNumber = useBlockNumber();
-  // console.log("battle player reveal blockNumber", blockNumber)
 
-  if (blockNumber == undefined) return null;
-  
+  const moveNames = useMemo(()=> {
+    return pokemonIndexToMoveNames(world.getEntityIndexStrict(next_pokemonID))
+  },[])
+
+  console.log("BattlePlayerReveal STARTs")
+
+  // if (!blockNumber || !commit || player_turn_pokemon == -1) return null;
+   
   const remaining_blocks = commit + wait_block - blockNumber
-  if (remaining_blocks < 0) {
-    console.log(next_PokemonIndex, "next_PokemonIndex")
-    const action = getComponentValue(RNGActionType, next_PokemonIndex as EntityIndex)?.value;
-    const target = getComponentValue(RNGTarget, next_PokemonIndex as EntityIndex)?.value;
-    console.log("action", action)
-    console.log("target", target)
 
-    if (!action || !target) return null;
-    battle(battleID, target, action)
-    console.log("reveal commit")
-  }
-
+  useEffect(() => {
+    const botReveal = async (battleID: any, target: any, action: any) => {
+      setMessage(`waiting player to finish reveal of action type: ${moveNames[action]}...`);
+      setIsBusy(true);
+      try {
+        console.log("player starts reveal")
+        await battle(battleID, target, action)
+        setIsBusy(false);
+        // setActive(ActiveComponent.battle)
+        console.log("player finishes reveal")
+      } catch(error) {
+        console.log("battle player reveal: ", error)
+      }
+    }
+    
+    if (remaining_blocks < 0 && !isBusy && player_turn_pokemon !=-1) {
+      const next_PokemonIndex = world.getEntityIndexStrict(next_pokemonID);
+      const action = getComponentValue(RNGActionType, next_PokemonIndex as EntityIndex)?.value;
+      const target = getComponentValue(RNGTarget, next_PokemonIndex as EntityIndex)?.value;
+      console.log("commited action", action)
+      console.log("commited target", target)
+      botReveal(battleID, target, action);
+    } 
+  },[isBusy, remaining_blocks])
 
 
   return (
     <>
+      <h1 style={{color: "black"}}>{remaining_blocks} blocks remain to reveal..</h1> 
+      
       <BlockLeft startBlock={commit} duration={wait_block}/>
     </>
   )

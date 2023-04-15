@@ -95,9 +95,9 @@ contract CrawlTest is PokemonTest {
 
   function battleOfferSetup() internal {
     setup();
-    spawnPlayer(1, alice);
+    spawnPlayer(4, alice);
     aliceID = addressToEntity(alice);
-    spawnPlayer(1, bob);
+    spawnPlayer(4, bob);
     bobID = addressToEntity(bob);
     spawnPlayer(1, eve);
     eveID = addressToEntity(eve);

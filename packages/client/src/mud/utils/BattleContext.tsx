@@ -3,32 +3,45 @@ import { EntityIndex, EntityID, ComponentValue, getEntitiesWithValue, getCompone
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { useMUD } from "../MUDContext";
 import { ethers , BigNumber, utils} from 'ethers';
+import { ActiveComponent } from "../../useActiveComponent";
 
 import { useGetBattleID, useGetCommit, useGetEnemyTeamIndex, useGetPlayerTeamIndex, useGetPlayerTeamPokemonIDs } from "./useBattleTurn";
+import { BattleActionType } from "../../enum/battleActionType";
 
 type BattleContextType = {
-  battleID?: EntityID;
+  battleID: EntityID;
   isPvE: boolean;
   player_teamIndex: EntityIndex;
   enemy_teamIndex: EntityIndex;
   player_pokemonIDs: EntityID[];
   enemy_pokemonIDs: EntityID[];
-  next_pokemonID: EntityID;
-  player_turn_pokemon: number; 
+  next_pokemonID?: EntityID;
+  player_turn_pokemon?: number; 
   commit?: number;
+  commit_action?: number;
+  setActive: any;
+  activeComponent: any;
+  selectedAction: any;
+  setSelectedAction: any;
+  selectedTarget: any;
+  setSelectedTarget: any
+  setIsBusy: any;
+  isBusy: boolean;
+  message: string;
+  setMessage: any;
 }
 
 const BattleContext = createContext<BattleContextType | undefined>(undefined);
 
-export const BattleProvider = (props: {children: ReactNode}) => {
+export const BattleProvider = (props: {children: ReactNode, battleID: any, playerEntityId: any}) => {
+  const { battleID, playerEntityId } = props;
+
   const currentValue = useContext(BattleContext);
   if (currentValue) throw new Error("BattleProvider can only be used once")
 
   const {
-    components: { Team, TeamBattle, TeamPokemons, BattlePokemons, RNGPrecommit },
+    components: { Team, TeamBattle, TeamPokemons, BattlePokemons, RNGPrecommit, RNGActionType },
     world,
-    systems,
-    playerEntityId,
   } = useMUD();
 
   const player_teamIndex = useMemo(() => {
@@ -36,30 +49,43 @@ export const BattleProvider = (props: {children: ReactNode}) => {
     return teamIndexes.next().value;
   }, [])
 
-  const battleID = getComponentValue(TeamBattle, player_teamIndex)?.value as any;
   const battleIndex = world.getEntityIndexStrict(battleID);
   const enemy_teamIndex = useMemo(()=> {
     const teamBattleIndexes = getEntitiesWithValue(TeamBattle, {value: battleID})?.values();
     return findFirstNotValue(teamBattleIndexes, player_teamIndex);
   }, [battleID])
-  const player_pokemonIDs = useMemo(()=>{
-    return getComponentValue(TeamPokemons, player_teamIndex)?.value as string[];
-  },[TeamPokemons]) as EntityID[];
-  const enemy_pokemonIDs = useMemo(()=>{
-    return getComponentValue(TeamPokemons, enemy_teamIndex)?.value as string[];
-  },[TeamPokemons]) as EntityID[];
+  const player_pokemonIDs = useComponentValue(TeamPokemons, player_teamIndex)?.value as EntityID[];
+  const enemy_pokemonIDs = useComponentValue(TeamPokemons, enemy_teamIndex)?.value as EntityID[];
+  const battle_pokemonIDs = useComponentValue(BattlePokemons, battleIndex)?.value as string[] | undefined;
   const next_pokemonID = useMemo(()=> {
-    const battle_pokemonIDs = getComponentValue(BattlePokemons, battleIndex)?.value as string[];
-    return battle_pokemonIDs[0];
-  },[BattlePokemons]) as EntityID;
-  const player_turn_pokemon = player_pokemonIDs.indexOf(next_pokemonID)
+    return battle_pokemonIDs ? battle_pokemonIDs[0] : undefined;
+  },[battle_pokemonIDs]) as EntityID | undefined;
+  const player_turn_pokemon = next_pokemonID ? player_pokemonIDs.indexOf(next_pokemonID) : undefined;
+
+  const enemy_playerID = useComponentValue(Team, enemy_teamIndex)?.value.toString();
   const isPvE = useMemo(() => {
-    const enemy_playerID = getComponentValue(Team, enemy_teamIndex)?.value.toString();
     // const other_playerID_uint256 = BigNumber.from(other_playerID).toString();
     const battleSystemID = utils.keccak256(utils.toUtf8Bytes('system.Battle'));
     return enemy_playerID == battleSystemID ? true : false;
   }, [battleID])
-  const commit = useGetCommit(next_pokemonID);
+
+  const next_PokemonIndex = world.entityToIndex.get(next_pokemonID as EntityID)
+  const commit_hex = useComponentValue(RNGPrecommit, next_PokemonIndex as EntityIndex)?.value;
+  const commit = useMemo(() => {
+    return commit_hex ? BigNumber.from(commit_hex).toNumber() : undefined;
+  }, [commit_hex]);
+
+  const commit_action_hex = useComponentValue(RNGActionType, next_PokemonIndex as EntityIndex)?.value;
+  const commit_action = useMemo(() => {
+    return commit_action_hex ? BigNumber.from(commit_action_hex).toNumber() : undefined;
+  }, [commit_action_hex]);
+
+  const [activeComponent, setActive] = useState()
+  const [selectedAction, setSelectedAction] = useState<BattleActionType>(-1);
+  const [selectedTarget, setSelectedTarget] = useState(-1);
+  const [isBusy, setIsBusy] = useState(false);
+
+  const [message, setMessage] = useState("");
 
   const value = {
     battleID,
@@ -70,7 +96,18 @@ export const BattleProvider = (props: {children: ReactNode}) => {
     enemy_pokemonIDs,
     next_pokemonID,
     player_turn_pokemon,
-    commit
+    commit,
+    commit_action,
+    setActive,
+    activeComponent,
+    selectedAction,
+    setSelectedAction,
+    selectedTarget,
+    setSelectedTarget,
+    isBusy,
+    setIsBusy,
+    message,
+    setMessage
   }
   return <BattleContext.Provider value={value}>{props.children}</BattleContext.Provider>
 }

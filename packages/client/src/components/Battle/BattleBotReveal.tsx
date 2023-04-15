@@ -8,30 +8,59 @@ import { BattleActionType } from "../../enum/battleActionType";
 import { useBlockNumber } from "../../mud/utils/useBlockNumber";
 import { BlockLeft } from "./BlockLeft";
 import { useGetBattleID } from "../../mud/utils/useBattleTurn";
+import { useBattleContext } from "../../mud/utils/BattleContext";
+import { pokemonIndexToMoveNames } from "../../mud/utils/pokemonInstance";
 
 
-export const wait_block = 20;
+export const wait_block = 5;
 
-export const BattleBotReveal = (props: {commit: any, next_PokemonIndex: any,battleID: any}) => {
-  const {commit, next_PokemonIndex, battleID} = props;
+export const BattleBotReveal =  () => {
 
   const {
+    world,
+    components: {RNGActionType, RNGTarget},
     api: { battle },
   } = useMUD();
   
-  const blockNumber = useBlockNumber();
-  console.log("battle bot reveal blockNumber", blockNumber)
+  const {next_pokemonID, battleID, commit, setActive, isBusy, setIsBusy, setMessage} = useBattleContext();
 
-  if (blockNumber == undefined) return null;
+  const blockNumber = useBlockNumber();
   
   const remaining_blocks = commit + wait_block - blockNumber
-  if (remaining_blocks < 0) {
-    // battle(battleID, "0x00", 0)
-    console.log("bot action submitted")
-  }
+
+  const moveNames = useMemo(()=> {
+    return pokemonIndexToMoveNames(world.getEntityIndexStrict(next_pokemonID))
+  },[])
+  
+
+  useEffect(() => {
+    const botReveal = async (battleID: any, action:any) => {
+      setMessage(`waiting bot to finish reveals of action type: ${moveNames[action]}...`);
+      setIsBusy(true);
+      try {
+        console.log("bot starts reveal")
+        await battle(battleID, "0x00", 0)
+        setIsBusy(false);
+        console.log("bot finishes reveal")
+      } catch(error) {
+        console.log("battle bot reveal: ", error)
+      }
+    }
+    
+    if (remaining_blocks < 0 && !isBusy && battleID && blockNumber && commit) {
+      const next_PokemonIndex = world.getEntityIndexStrict(next_pokemonID);
+      const action = getComponentValue(RNGActionType, next_PokemonIndex as EntityIndex)?.value;
+      const target = getComponentValue(RNGTarget, next_PokemonIndex as EntityIndex)?.value;
+      console.log("bot commited action", action)
+      console.log("bot commited target", target)
+      botReveal(battleID, action);
+    }
+  },[isBusy, remaining_blocks])
+
 
   return (
     <>
+      <h1 style={{color: "black"}}>{remaining_blocks} blocks remain to reveal..</h1> 
       <BlockLeft startBlock={commit} duration={wait_block}/>
     </>
   )

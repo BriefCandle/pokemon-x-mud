@@ -17,13 +17,13 @@ export const PokemonClasses = () => {
   return (
     <div>
       <span>Pokemon Class</span>
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
       {/* {Array.from(pokemonWorldIndexes).map((worldIndex, index) => {
         <PokemonClass indexes={""}/>
       })
       } */}
       {Array.from(pokemonWorldIndexes).map((pokemonIndex, index) => (
-        <div key={index} style={{ display: 'flex', flexDirection: 'column', border: '1px solid black', padding: '10px' }}>
+        <div key={index} style={{ display: 'flex', flexDirection: 'row', border: '1px solid black', padding: '10px' }}>
           <PokemonClass index={pokemonIndex} />
           <PokemonMoves index={pokemonIndex}/>
         </div>

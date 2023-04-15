@@ -36,13 +36,13 @@ contract CreateMoveClassScript is PokemonScript {
     infoArray[1] = MoveInfo(PokemonType.Grass, MoveCategory.Status, 40, 0, 100);
     effectArray[1] = MoveEffect(0,-1,0,0,0,0,0,0,0,0,0,MoveTarget.Foe, StatusCondition.None);
 
-    nameArray[2] = 'Vine Whip';
-    infoArray[2] = MoveInfo(PokemonType.Grass, MoveCategory.Physical, 10, 35, 100);
+    nameArray[2] = 'Ember';
+    infoArray[2] = MoveInfo(PokemonType.Fire, MoveCategory.Physical, 40, 25, 100);
     effectArray[2] = MoveEffect(0,0,0,0,0,0,0,0,0,0,0,MoveTarget.Foe, StatusCondition.None);
 
-    nameArray[3] = 'Leech Seed';
-    infoArray[3] = MoveInfo(PokemonType.Grass, MoveCategory.Status, 10, 0, 90);
-    effectArray[3] = MoveEffect(0,0,0,0,0,0,0,0,0,0,0,MoveTarget.Foe,StatusCondition.LeechSeed);
+    nameArray[3] = 'Vine Whip';
+    infoArray[3] = MoveInfo(PokemonType.Grass, MoveCategory.Status, 50, 25, 100);
+    effectArray[3] = MoveEffect(0,0,0,0,0,0,0,0,0,0,0,MoveTarget.Foe,StatusCondition.None);
 
     for(uint i=0; i<nameArray.length; i++) {
       CreateMoveClassSystem(system(CreateMoveClassSystemID)).executeTyped(

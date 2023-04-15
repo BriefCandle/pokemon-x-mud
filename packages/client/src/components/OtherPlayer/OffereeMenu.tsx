@@ -1,21 +1,41 @@
 import { ActiveComponent } from "../../useActiveComponent";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useComponentValue, useEntityQuery, useObservableValue } from "@latticexyz/react";
+import { getEntitiesWithValue, Has, HasValue, ComponentValue, Type, EntityIndex, getComponentValue } from "@latticexyz/recs";
+
 import { useKeyboardMovement } from "../../useKeyboardMovement";
-import { useMapContext } from "../../mud/utils/MapContext";
 import { useMUD } from "../../mud/MUDContext";
+import { TimeLeft } from "../Battle/TimeLeft";
+import { BigNumber } from "ethers";
+import { useTimestamp } from "../../mud/utils/useTimestamp";
+import { OFFER_DURATION } from "./OfferorWait";
+import { useMapContext } from "../../mud/utils/MapContext";
 
 const menuItems = [
-  { name: "Pokemon", value: "pokemon"},
-  { name: "Pokemon Team", value: "team"},
-  { name: "Item", value: "item"},
-  { name: "Logout", value: "logout"}
+  { name: "My Team", value: "myTeam"},
+  { name: "Other Team", value: "otherTeam"},
+  { name: "$Accept Offer", value: "acceptOffer"},
+  { name: "$Rescind Offer", value: "rescindOffer"}
 ]
 
-export const RenderMenu = () => {
+export const OffereeMenu = () => {
+  const {setActive, activeComponent, setThatPlayerIndex} = useMapContext();
 
-  const { playerEntity, api: {logout}} = useMUD();
+  const {
+    world,
+    components: { BattleOfferTimestamp, BattleOffer, Team },
+    api: { battleAccept, battleDecline },
+    playerEntity,
+    playerEntityId
+  } = useMUD();
 
-  const { setActive, activeComponent, setThatPlayerIndex } = useMapContext()
+  const offerorIndex = useEntityQuery([HasValue(BattleOffer, {value: playerEntityId})])[0];
+
+  const startTimestamp_hex = useMemo(()=> {
+    return getComponentValue(BattleOfferTimestamp, offerorIndex)?.value;
+  },[])
+
+  const startTimestamp = BigNumber.from(startTimestamp_hex).toNumber()
 
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
 
@@ -34,38 +54,44 @@ export const RenderMenu = () => {
   const press_a = useCallback(async () => {
       const item = menuItems[selectedItemIndex];
       switch (item.value) {
-        case "pokemon":
-          return console.log("Pokemon");
-        case "team":
+        case "myTeam":
           setThatPlayerIndex(playerEntity);
           return setActive(ActiveComponent.team);
-        case "item":
-          return console.log("Item");
-        case "logout":
-          await logout();
-          return setActive(ActiveComponent.map)
+        case "otherTeam":
+          setThatPlayerIndex(offerorIndex);
+          return setActive(ActiveComponent.team);
+        case "acceptOffer":
+          await battleAccept()
+          return ; 
+        case "rescindOffer":
+          await battleDecline(playerEntityId)
+          return;
       }
     }, [press_up, press_down]);
 
-    const press_b = () => {
-      setActive(ActiveComponent.map);
-    }
+    const press_b = () => { return; };
 
     const press_left = () => { return; };
     const press_right = () => { return; };
-    const press_start = () => { setActive(ActiveComponent.map);};
+    const press_start = () => { return;};
 
-  useKeyboardMovement(activeComponent == ActiveComponent.menu, 
+  useKeyboardMovement(activeComponent == ActiveComponent.offereeMenu, 
     press_up, press_down, press_left, press_right, press_a, press_b, press_start)
 
   
   return (
     <>
-      <div className="menu">
+      <TimeLeft startTimestamp={startTimestamp} max_duration={OFFER_DURATION}/>
+
+      <div className="player-console">
+        <h1>You were offered to battle (to-death). Rescinding the offer results into respawning</h1>
+      </div>
+
+      <div className="offeree-menu">
         {menuItems.map((item, index) => (
           <div 
             key={item.value}
-            className={`menu-item ${index === selectedItemIndex ? "selected" : ""}`}
+            className={`offeree-menu-item ${index === selectedItemIndex ? "selected" : ""}`}
           >
             {item.name}
           </div>
@@ -73,21 +99,21 @@ export const RenderMenu = () => {
       </div>
       <style>
       {`
-        .menu {
+        .offeree-menu {
           display: flex;
           flex-direction: column;
-          top: 50px;
-          right: 0px;
           background-color: white;
           border: 4px solid #585858;
           padding: 8px;
           border-radius: 12px;
           box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
           position: absolute; /* Add this to allow z-index */
+          bottom: 100px;
+          right:0;
           z-index: 10; /* Add this to set the z-index */
         }
         
-        .menu-item {
+        .offeree-menu-item {
           display: flex;
           justify-content: center;
           align-items: center;

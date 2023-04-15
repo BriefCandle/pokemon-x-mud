@@ -4,7 +4,7 @@ import { Uint256Component } from "std-contracts/components/Uint256Component.sol"
 
 uint256 constant ID = uint256(keccak256("component.BattleActionTimestamp"));
 
-uint256 constant MAX_DURATION = 1200;
+uint256 constant MAX_DURATION = 120;
 
 // battleID -> timestamp
 contract BattleActionTimestampComponent is Uint256Component {

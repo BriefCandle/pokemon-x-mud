@@ -3,7 +3,7 @@ import { useMUD } from "../../mud/MUDContext";
 import { useState, useEffect } from "react";
 import { getComponentEntities } from "@latticexyz/recs";
 import { DisplayStruct } from "./PokemonMoves";
-
+import { LoadPokemonImage, PokemonImageType } from "../PokemonInstance/loadPokemonImage";
 
 export const PokemonClass = (props:any) => {
   const {
@@ -23,6 +23,7 @@ export const PokemonClass = (props:any) => {
   return (
     <div>
       <div>Pokemon Index: {pokemonIndex?.value}</div>
+      <LoadPokemonImage classIndex={pokemonIndex?.value} imageType={PokemonImageType.front}/>
       <div>World Index: {index.valueOf()}</div>
       <div>EntityID: {entityID.valueOf()}</div>
       <div>Base Stats: {DisplayStruct(bs)}</div>

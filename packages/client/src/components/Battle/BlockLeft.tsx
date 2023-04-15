@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMUD } from "../../mud/MUDContext";
+import { useBattleContext } from "../../mud/utils/BattleContext";
 import { useBlockNumber } from "../../mud/utils/useBlockNumber";
 
 const cx = 30;
@@ -11,6 +12,8 @@ const min_height = 5;
 
 export const BlockLeft = (props: {startBlock: number, duration: number}) => {
   const {startBlock, duration} = props;
+
+  // const {commit} = useBattleContext();
 
   const blockNumber = useBlockNumber();
 

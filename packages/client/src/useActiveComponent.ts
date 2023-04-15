@@ -3,6 +3,8 @@ import { useState } from "react";
 // mainly for user input
 export enum ActiveComponent {
   "map",
+  "terrainConsole",
+  "nurse",
   "pc",
   "pcTeam",
   "pcTeamMenu",
@@ -12,6 +14,9 @@ export enum ActiveComponent {
   "pcPokemon",
   "pcSwitch",
   "menu",
+  "otherPlayerMenu",
+  "offerorWait",
+  "offereeMenu",
   "team",
   "teamSwitch",
   "teamPokemonMenu",
@@ -20,8 +25,7 @@ export enum ActiveComponent {
   "battle",
   "battlePlayerAction",
   "battlePlayerTarget",
-  "battlePlayerReveal",
-  "battlePlayerWait"
+  "battlePlayerReveal"
 }
 
 export const useActiveComponent = () => {

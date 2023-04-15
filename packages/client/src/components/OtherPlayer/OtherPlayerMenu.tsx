@@ -1,24 +1,34 @@
 import { ActiveComponent } from "../../useActiveComponent";
 import { useCallback, useEffect, useState } from "react";
+import { useComponentValue, useEntityQuery, useObservableValue } from "@latticexyz/react";
+import { getEntitiesWithValue, Has, HasValue, ComponentValue, Type } from "@latticexyz/recs";
+
 import { useKeyboardMovement } from "../../useKeyboardMovement";
 import { useMUD } from "../../mud/MUDContext";
+import { PrintText } from "../../mud/utils/PrintText";
+import { BigNumber } from "ethers";
 import { useMapContext } from "../../mud/utils/MapContext";
 
-const PCTeamMenuItems = [
-  { name: "Detail", value: "detail"},
-  { name: "Deposit", value: "deposit"},
+const menuItems = [
+  { name: "Other Team", value: "teamInfo"},
+  { name: "$Offer to Battle", value: "offerToBattle"},
+  { name: "Watch Battle", value: "watchBattle"},
   { name: "Back", value: "back"}
 ]
 
-export const PCTeamMenu = (props: {pokemonIDs: string[], index: number}) => {
-  const {pokemonIDs, index} = props;
+export const OtherPlayerMenu = () => {
+  const {setActive, activeComponent, thatPlayerIndex, setThatPlayerIndex} = useMapContext();
 
-  const {setActive, activeComponent, interactCoord} = useMapContext();
+  const {
+    world,
+    api: { battleOffer },
+  } = useMUD();
 
-  const { api: {assembelTeam} } = useMUD();
-
+  const thatPlayerID = world.entities[thatPlayerIndex];
+  // const thatPlayerID = BigNumber.from(thatPlayerID_hex).toString();
 
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
+  const [isBusy, setIsBusy] = useState(false);
 
   const press_up = () => {
     setSelectedItemIndex((selectedItemIndex)=> 
@@ -28,67 +38,76 @@ export const PCTeamMenu = (props: {pokemonIDs: string[], index: number}) => {
 
   const press_down = () => {
     setSelectedItemIndex((selectedItemIndex)=> 
-      selectedItemIndex === PCTeamMenuItems.length - 1 ? selectedItemIndex : selectedItemIndex + 1
+      selectedItemIndex === menuItems.length - 1 ? selectedItemIndex : selectedItemIndex + 1
     )
   }
 
-  const press_a = useCallback(() => {
-      const item = PCTeamMenuItems[selectedItemIndex];
+  const press_a = useCallback(async () => {
+      const item = menuItems[selectedItemIndex];
       switch (item.value) {
-        case "detail":
-          console.log("display detail")
-          return; //setActive(ActiveComponent.teamPokemon);
-        case "deposit":
-          pokemonIDs[index] = "0x00";
-          assembelTeam(pokemonIDs, interactCoord);
-          return setActive(ActiveComponent.pcOwned);
+        case "teamInfo":
+          
+          setThatPlayerIndex(thatPlayerIndex);
+          return setActive(ActiveComponent.team);
+        case "offerToBattle":
+          setIsBusy(true)
+          await battleOffer(thatPlayerID);
+          return //setIsBusy(false)
+        case "watchBattle":
+          return console.log("watch battle");
         case "back":
-          return setActive(ActiveComponent.pcTeam);
+          return setActive(ActiveComponent.map);
   
       }
     }, [press_up, press_down]);
 
     const press_b = () => {
-      setActive(ActiveComponent.pcTeam);
+      setActive(ActiveComponent.map);
     }
 
     const press_left = () => { return; };
     const press_right = () => { return; };
     const press_start = () => { setActive(ActiveComponent.map);};
 
-  useKeyboardMovement(activeComponent == ActiveComponent.pcTeamMenu, 
+  useKeyboardMovement(activeComponent == ActiveComponent.otherPlayerMenu, 
     press_up, press_down, press_left, press_right, press_a, press_b, press_start)
 
   
   return (
     <>
-      <div className="pc-team-menu">
-        {PCTeamMenuItems.map((item, index) => (
+    { isBusy ?    
+      <div className="player-console">
+        <h1 style={{color: "black"}}>waiting tx to complete</h1>;
+        {/* <PrintText text={"waiting tx to complete"} delay={10}/> */}
+      </div> 
+      :
+      <div className="other-player-menu">
+        {menuItems.map((item, index) => (
           <div 
             key={item.value}
-            className={`menu-item ${index === selectedItemIndex ? "selected" : ""}`}
+            className={`other-player-menu-item ${index === selectedItemIndex ? "selected" : ""}`}
           >
             {item.name}
           </div>
         ))}
-      </div>
+      </div>}
       <style>
       {`
-        .pc-team-menu {
+        .other-player-menu {
           display: flex;
           flex-direction: column;
-          bottom: 0;
-          right: 0;
           background-color: white;
           border: 4px solid #585858;
           padding: 8px;
           border-radius: 12px;
           box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
           position: absolute; /* Add this to allow z-index */
-          z-index: 30; /* Add this to set the z-index */
+          bottom: 100px;
+          right:0;
+          z-index: 10; /* Add this to set the z-index */
         }
         
-        .menu-item {
+        .other-player-menu-item {
           display: flex;
           justify-content: center;
           align-items: center;

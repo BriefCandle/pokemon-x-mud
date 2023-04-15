@@ -12,12 +12,12 @@ import { PokemonBasicInfoBar } from "../PokemonInstance/PokemonBasicInfoBar";
 import { PCOwnedMenu } from "./PCOwnedMenu";
 import { PCTeam } from "./PCTeam";
 import { PCTeamSelect } from "./PCTeamSelect";
+import { useMapContext } from "../../mud/utils/MapContext";
 
-export const PCOwned = (props: {setActive: any, activeComponent: any, pc_coord:{x:number,y:number}}) => { 
-  const {setActive, activeComponent, pc_coord} = props;
+export const PCOwned = () => { 
+  const {setActive, activeComponent} = useMapContext();
   const {
     components: { OwnedBy, PokemonClassID },
-    world,
     playerEntityId,
   } = useMUD();
 
@@ -53,9 +53,8 @@ export const PCOwned = (props: {setActive: any, activeComponent: any, pc_coord:{
   },[])
 
   const press_a = useCallback(() => {
-    const item = pokemonInfo[selectedItemIndex];
-    // if (item == "0x00") return null;
-    return setActive(ActiveComponent.pcOwnedMenu);
+    // const item = pokemonInfo[selectedItemIndex];
+    setActive(ActiveComponent.pcOwnedMenu);
   }, [selectedItemIndex]);
 
   const press_b = () => { setActive(ActiveComponent.map);}
@@ -79,18 +78,17 @@ export const PCOwned = (props: {setActive: any, activeComponent: any, pc_coord:{
     {/* PCTeamSelect as child here to directly pass selected to-team pokemon in props */}
     <div className="child">
       {activeComponent != ActiveComponent.pcTeamSelect ? 
-      <PCTeam setActive={setActive} activeComponent={activeComponent} pc_coord={pc_coord}/> : null}
+      <PCTeam /> : null}
 
       {activeComponent == ActiveComponent.pcTeamSelect ?
-      <PCTeamSelect setActive={setActive} activeComponent={activeComponent} 
-      pokemonIndex={ownedPokemonIndexes[selectedItemIndex]} pc_coord={pc_coord} /> : null}
+      <PCTeamSelect pokemonIndex={ownedPokemonIndexes[selectedItemIndex]} /> : null}
       
     </div>
 
     <div className="child"> 
       <div className="pc-owned">
         { activeComponent == ActiveComponent.pcOwnedMenu ?
-        <PCOwnedMenu setActive={setActive} activeComponent={activeComponent} /> : null}
+        <PCOwnedMenu /> : null}
 
         <h1 style={{color: "black"}}>PC</h1>
         {pokemonInfo.map((info, index) => (

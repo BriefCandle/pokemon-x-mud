@@ -7,23 +7,7 @@ import { useKeyboardMovement } from "../../useKeyboardMovement";
 export const TeamPokemon = (props: {setActive: any, activeComponent: any, pokemonID: string}) => { 
   const {setActive, activeComponent, pokemonID} = props;
   console.log("team pokemon", pokemonID)
-  // const {
-  //   components: { Team, TeamPokemons },
-  //   world,
-  //   // api: {  },
-  //   playerEntityId,
-  // } = useMUD();
 
-  // const teamIndexes = getEntitiesWithValue(Team, {value: playerEntityId} as ComponentValue<{value: any}>)?.values();
-  // const teamIndex = teamIndexes.next().value;
-  // const pokemonIDs = getComponentValue(TeamPokemons, teamIndex)?.value as string; //Type.NumberArray
-  // console.log(pokemonIDs)
-
-  // Array.from(teamIDs).map((teamID) => {
-  //   const test = getComponentValue(Team, teamID)
-  //   const test2 = getEntitiesWithValue(Team, test as ComponentValue<any>)
-  //   // console.log("test2 is", test2)
-  // })
 
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
 

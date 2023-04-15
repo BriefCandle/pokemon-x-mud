@@ -8,10 +8,12 @@ import { PokemonBasicInfo, getTeamPokemonInfo } from "../../mud/utils/pokemonIns
 import { LoadPokemonImage, PokemonImageType } from "../PokemonInstance/loadPokemonImage";
 import { PokemonBasicInfoBar } from "../PokemonInstance/PokemonBasicInfoBar";
 import { PCTeamMenu } from "./PCTeamMenu";
+import { useMapContext } from "../../mud/utils/MapContext";
 
-export const PCTeamSelect = (props: {setActive: any, activeComponent: any, pokemonIndex: EntityIndex, pc_coord:{x:number,y:number}}) => { 
-  console.log("pcTeam")
-  const {setActive, activeComponent, pokemonIndex, pc_coord} = props;
+export const PCTeamSelect = (props: {pokemonIndex: EntityIndex}) => { 
+
+  const {pokemonIndex} = props;
+  const {setActive, activeComponent, interactCoord} = useMapContext();
   const {
     components: { Team, TeamPokemons },
     api: { assembelTeam },
@@ -46,7 +48,7 @@ export const PCTeamSelect = (props: {setActive: any, activeComponent: any, pokem
   const press_a = useCallback(() => {
     pokemonIDs[selectedItemIndex] = world.entities[pokemonIndex]
     console.log("new team:", pokemonIDs)
-    assembelTeam(pokemonIDs, pc_coord);
+    assembelTeam(pokemonIDs, interactCoord);
     return setActive(ActiveComponent.pcOwned);
   }, [selectedItemIndex]);
 

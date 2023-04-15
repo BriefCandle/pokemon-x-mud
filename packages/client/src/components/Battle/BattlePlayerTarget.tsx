@@ -5,47 +5,62 @@ import { EntityID, EntityIndex, getComponentValue, getComponentValueStrict } fro
 import { ActiveComponent } from "../../useActiveComponent";
 import { useKeyboardMovement } from "../../useKeyboardMovement";
 import { BattleActionType } from "../../enum/battleActionType";
+import { useBattleContext } from "../../mud/utils/BattleContext";
+import { pokemonIndexToMoveNames } from "../../mud/utils/pokemonInstance";
 
 
-export const BattlePlayerTarget = (
-  props: {setActive: any, activeComponent: any,
-          selectedAction: BattleActionType,
-          setSelectedTarget: React.Dispatch<React.SetStateAction<number>>, selectedTarget: number
-          targetIDs: EntityID[], battleID: EntityID
-  }) => {
-  const {setActive, activeComponent, selectedAction, setSelectedTarget, selectedTarget, targetIDs, battleID} = props;
+export const BattlePlayerTarget = () => {
 
   const {
     world,
     api: { battle },
     // components: { PokemonMoves, MoveName },
   } = useMUD();
-  
-  console.log("BattlePlayerTarget")
 
-  useEffect(()=>{
-    setSelectedTarget(0);
-  },[])
+  const {battleID, next_pokemonID, enemy_pokemonIDs, setActive, setSelectedAction, selectedAction, setSelectedTarget, selectedTarget, activeComponent,
+  isBusy, setIsBusy, setMessage} = useBattleContext();
+  
+  // useEffect(()=>{
+  //   setSelectedTarget(0);
+  // },[])
+
+  const moveNames = useMemo(()=> {
+    return pokemonIndexToMoveNames(world.getEntityIndexStrict(next_pokemonID))
+  },[next_pokemonID])
    
 
   // ----- key input functions -----
   const press_left = useCallback(() => {
-    setSelectedTarget(findPreviousIndex(selectedTarget, targetIDs));
+    console.log("selectedTarget",selectedTarget)
+    console.log("right", findPreviousIndex(selectedTarget, enemy_pokemonIDs))
+    setSelectedTarget(findPreviousIndex(selectedTarget, enemy_pokemonIDs));
   },[selectedTarget])
 
   const press_right = useCallback(() => {
-    setSelectedTarget(findNextIndex(selectedTarget, targetIDs));
+    console.log("selectedTarget",selectedTarget)
+    const nextIndex = findNextIndex(selectedTarget, enemy_pokemonIDs)
+    console.log("next", nextIndex)
+    setSelectedTarget(nextIndex);
   },[selectedTarget])
 
-  const press_a = useCallback(() => {
-    console.log("selectedTarget", targetIDs[selectedTarget]);
-    console.log("selectedAction", selectedAction)
-    battle(battleID, targetIDs[selectedTarget], selectedAction)
+  const press_a = useCallback(async () => {
+    setMessage(`waiting player commits action type: ${moveNames[selectedAction]}...`);
+    setIsBusy(true)
+    try {
+      console.log("player starts commit", battleID, enemy_pokemonIDs[selectedTarget], selectedAction)
+      await battle(battleID, enemy_pokemonIDs[selectedTarget], selectedAction);
+      setIsBusy(false)
+      console.log("player finishes commit")
+    } catch (error) {
+      console.error("battle player target:", error)
+    }
+    setSelectedTarget(-1);   
+    // setActive(ActiveComponent.battle) 
   }, [selectedTarget]);
 
   const press_b = () => { 
     setSelectedTarget(-1);
-    setActive(ActiveComponent.battlePlayerAction);
+    // setActive(ActiveComponent.battlePlayerAction);
   }
 
   const press_up = () => { return; };
@@ -54,18 +69,20 @@ export const BattlePlayerTarget = (
 
   const press_start = () => { return; };
 
-  useKeyboardMovement(activeComponent == ActiveComponent.battlePlayerTarget, 
+  useKeyboardMovement( true, //activeComponent == ActiveComponent.battlePlayerTarget, 
     press_up, press_down, press_left, press_right, press_a, press_b, press_start)
 
   const findNextIndex = (index: number, ids: string[]): number => {
-    for (let i=index; i<ids.length; i++) {
+    for (let i=index+1; i<ids.length; i++) {
+      console.log("id", i)
       if (ids[i]!="0x00") return i;
     }
     return index;
   }
 
   const findPreviousIndex = (index: number, ids: string[]): number => {
-    for (let i=index; i >=0; i--) {
+    for (let i=index-1; i >=0; i--) {
+      // console.log("id", i)
       if (ids[i]!="0x00") return i;
     }
     return index;
@@ -73,6 +90,7 @@ export const BattlePlayerTarget = (
 
   return (
     <>
+      <h1 style={{color: "black"}}>Player selecting a target</h1> 
     </>
   )
 

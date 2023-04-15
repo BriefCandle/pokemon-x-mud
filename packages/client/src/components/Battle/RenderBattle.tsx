@@ -15,10 +15,13 @@ import { LoadPokemonImage, PokemonImageType } from "../PokemonInstance/loadPokem
 import { PokemonBasicInfoBar } from "../PokemonInstance/PokemonBasicInfoBar";
 import { BattleActionType } from "../../enum/battleActionType";
 import { BattlePlayerReveal } from "./BattlePlayerReveal";
-import { BattleBotAction } from "./BattkeBotAction";
+import { BattleBotAction } from "./BattleBotAction";
 import { BattleBotReveal } from "./BattleBotReveal";
 import { useGetCommit, useGetNextPokemonID, useGetPlayerTeamIndex } from "../../mud/utils/useBattleTurn";
-import { BattleProvider } from "../../mud/utils/BattleContext";
+import { useBattleContext } from "../../mud/utils/BattleContext";
+import { TimeLeftAction } from "./TimeLeftAction";
+import { BattleForceSkip } from "./BattleForceSkip";
+
 
 export const findFirstNotValue = (iterable: IterableIterator<any>, notValue: any): any=> {
   for (const element of iterable) {
@@ -29,35 +32,32 @@ export const findFirstNotValue = (iterable: IterableIterator<any>, notValue: any
   return undefined
 }
 
-export const RenderBattle = (props: {setActive: any, activeComponent: any, battleID: any}) => { 
-  const {setActive, activeComponent, battleID} = props;
+export const RenderBattle = () => { 
   
   const {
-    components: { Team, TeamBattle, TeamPokemons, BattlePokemons, RNGPrecommit },
     world,
-    systems,
-    playerEntityId,
   } = useMUD();
 
+  const {
+    battleID,
+    isPvE,
+    player_teamIndex,
+    enemy_teamIndex,
+    player_pokemonIDs,
+    enemy_pokemonIDs,
+    next_pokemonID,
+    player_turn_pokemon,
+    commit,
+    commit_action,
+    selectedTarget,
+    isBusy,
+    message
+  } = useBattleContext();
+
+
   // get all pokemon's basic info
-  useObservableValue(RNGPrecommit.update$)
-  useObservableValue(BattlePokemons.update$)
-  console.log("render battle render")
 
-  const battleIndex = world.getEntityIndexStrict(battleID);
-  // get player team index
-  const player_teamIndex = useGetPlayerTeamIndex();
-
-  // get player team pokemons
-  const player_pokemonIDs = getComponentValue(TeamPokemons, player_teamIndex)?.value as string[];
-  console.log("player_pokemonIDs", player_pokemonIDs)
-
-  // get other team index
-  const teamBattleIndexes = getEntitiesWithValue(TeamBattle, {value: battleID})?.values();
-  const other_teamIndex = findFirstNotValue(teamBattleIndexes, player_teamIndex);
-
-  // get other team pokemons
-  const other_pokemonIDs = getComponentValue(TeamPokemons, other_teamIndex)?.value as string[];
+  // const battleIndex = world.getEntityIndexStrict(battleID);
 
   // get basic info for both teams' pokemons
   const player_pokemons_info: (PokemonBasicInfo | undefined) [] = player_pokemonIDs?.map((pokemonEntity) => {
@@ -66,73 +66,30 @@ export const RenderBattle = (props: {setActive: any, activeComponent: any, battl
     else return undefined;
   })
 
-  const other_pokemons_info: (PokemonBasicInfo | undefined) [] = other_pokemonIDs?.map((pokemonEntity) => {
+  const enemy_pokemons_info: (PokemonBasicInfo | undefined) [] = enemy_pokemonIDs?.map((pokemonEntity) => {
     const pokemonIndex = world.entityToIndex.get((pokemonEntity as EntityID))
     if (pokemonIndex !== undefined) return getTeamPokemonInfo(pokemonIndex)
     else return undefined;
   })
 
-  // console.log("player_pokemons_info", player_pokemons_info)
-  // console.log("other_pokemons_info", other_pokemons_info)
+  // console.log("next_pokemonID",next_pokemonID)
+  // console.log("enemy_pokemonIDs", enemy_pokemonIDs)
+  // console.log("commit", commit)
+  // console.log("player_turn_pokemon", player_turn_pokemon)
+  // console.log("isPvE", isPvE)
+  // console.log("commit_action", commit_action)
 
-  // get battleType
-  const isPvE = () => {
-    const other_playerID = getComponentValue(Team, other_teamIndex)?.value.toString();
-    // const other_playerID_uint256 = BigNumber.from(other_playerID).toString();
-    const battleSystemID = utils.keccak256(utils.toUtf8Bytes('system.Battle'));
-    return other_playerID == battleSystemID ? true : false;
-  }
-  const isbattlePvE = isPvE();
+  // if (next_pokemonID == undefined) {
+  //   return <><h1 style={{color: "black"}}>Battle ends</h1></>
+  // }
 
-  // get next pokemon
-  // const battle_pokemonIDs = getComponentValue(BattlePokemons, battleIndex)?.value as string[];
-  const next_pokemonID = useGetNextPokemonID(battleIndex)
-
-  // determine if player is next turn
-  // const isPlayerTurn = player_pokemonIDs.includes(next_pokemonID);
-  const player_turn_pokemon = player_pokemonIDs.indexOf(next_pokemonID)
-  console.log("player_turn_pokemon", player_turn_pokemon)
-
-  // determine if next pokemon has committed
-  const next_PokemonIndex = world.entityToIndex.get(next_pokemonID as EntityID)
-  // const commit_hex = getComponentValue(RNGPrecommit, next_PokemonIndex as EntityIndex)?.value;
-  // const commit = commit_hex ? BigNumber.from(commit_hex).toNumber() : undefined;
-  const commit = useGetCommit(next_pokemonID)
-  
-  console.log("commit", commit)
-
-  // listen to pokemons's status (hp for now) from both teams
-
-  // listen to next pokemon to check if it is player's turn
-
-  // if it is, 1) get action timestamp to determine remaining time for action to take;
-  // 2) setActive on playerTurn to let player decide which action to take
-
-  // if it is not, determine if pvp, then wait for player's own turn;
-  // if pve, calls system.battle 
-  
-  const [selectedAction, setSelectedAction] = useState<BattleActionType>(0);
-  const [selectedTarget, setSelectedTarget] = useState(-1);
-
-  useEffect(() =>{
-    if (player_turn_pokemon != -1) {
-      if (activeComponent != ActiveComponent.battlePlayerTarget && activeComponent != ActiveComponent.battlePlayerReveal) {
-        setActive(ActiveComponent.battlePlayerAction)
-      } 
-      // if (commit) {
-      //   setActive(ActiveComponent.battlePlayerReveal)
-      // }
-    } 
-  }, [activeComponent])
-
-  console.log("activeComponent", activeComponent)
   return (
-    <BattleProvider>  
+    <>  
       <div className="battle">
         {/* <h1 style={{color: "black"}}>Battle</h1> */}
 
         <div className="other-pokemons">
-          { other_pokemons_info.map((pokemon_info, index)=> (
+          { enemy_pokemons_info.map((pokemon_info, index)=> (
             <PokemonFrontBattle basicInfo={pokemon_info} selected={selectedTarget == index? true:false}/>
           ))}
         </div>
@@ -142,32 +99,49 @@ export const RenderBattle = (props: {setActive: any, activeComponent: any, battl
             <PokemonBackBattle basicInfo={pokemon_info} selected={player_turn_pokemon == index? true: false}/>
           ))}
         </div>
+        
+        <div className="battle-console"> 
+          { isBusy ? 
+          <h1>{message}</h1> : null}
+          { player_turn_pokemon != -1 && !commit && selectedTarget == -1 && !isBusy?
+          <BattlePlayerAction /> : null}
+          
+          { player_turn_pokemon != -1 && !commit && selectedTarget != -1 && !isBusy ? 
+          <BattlePlayerTarget /> : null }
 
-        { activeComponent == ActiveComponent.battlePlayerAction || 
-          activeComponent == ActiveComponent.battlePlayerTarget? 
-        <BattlePlayerAction 
-          setActive={setActive} activeComponent={activeComponent}
-          setSelectedAction={setSelectedAction} selectedAction={selectedAction}
-          pokemonID={next_pokemonID as EntityID} battleID={battleID as EntityID}
-        /> : null }
+          {/* { player_turn_pokemon != -1 && commit && isBusy ? 
+          <h1 style={{color: "black"}}>Player waiting for COMMIT tx to complete</h1> : null} */}
 
-        { activeComponent == ActiveComponent.battlePlayerTarget ? 
-        <BattlePlayerTarget 
-          setActive={setActive} activeComponent={activeComponent}
-          selectedAction={selectedAction}
-          setSelectedTarget={setSelectedTarget} selectedTarget={selectedTarget}
-          targetIDs={other_pokemonIDs as EntityID[]} battleID={battleID as EntityID}
-        /> : null }
 
-        {player_turn_pokemon !=-1 && commit ? 
-        <BattlePlayerReveal commit={commit} next_PokemonIndex={next_PokemonIndex} battleID={battleID}/> : null}
+          { player_turn_pokemon != -1 && commit && !isBusy ? 
+          <BattlePlayerReveal /> : null}
 
-        {/* {player_turn_pokemon ==-1 && isPvE() && !commit? 
-        <BattleBotAction battleID={battleID}/> : null} */}
-        <BattleBotAction battleID={battleID}/>
+          {/* { player_turn_pokemon != -1 && !commit && isBusy ? 
+          <h1 style={{color: "black"}}>Player waiting for REVEAL tx to complete</h1> : null} */}
 
-        {player_turn_pokemon ==-1 && isPvE() && commit? 
-        <BattleBotReveal commit={commit} next_PokemonIndex={next_PokemonIndex} battleID={battleID}/> : null}
+
+          { player_turn_pokemon == -1 && isPvE && !commit && !isBusy? 
+          <BattleBotAction /> : null}
+
+          {/* { player_turn_pokemon == -1 && isPvE && commit && isBusy? 
+          <h1 style={{color: "black"}}>Bot waiting for COMMIT tx to complete</h1> : null} */}
+          
+       
+          { player_turn_pokemon == -1 && isPvE && commit && !isBusy? 
+          <BattleBotReveal /> : null}   
+
+          {/* { player_turn_pokemon == -1 && isPvE && !commit && isBusy? 
+          <h1 style={{color: "black"}}>Bot waiting for REVEAL tx to complete</h1> : null} */}
+
+          { player_turn_pokemon == -1 && !isPvE ?
+           <BattleForceSkip/> : null }
+
+          
+        </div>
+
+        {/* only display for player's turn; as to other player's turn, put in BattleForceSkip */}
+        { player_turn_pokemon != -1 && !commit && !isBusy ? 
+        <TimeLeftAction /> : null}
 
 
       </div>
@@ -202,6 +176,18 @@ export const RenderBattle = (props: {setActive: any, activeComponent: any, battl
           display: flex;
           justify-content: flex-start;
         }
+
+        .battle-console {
+          height: 100px;
+          background-color: white;
+          display: flex;
+          color: black;
+          justify-content: space-between;
+          border: 4px solid #585858;
+          padding: 8px;
+          border-radius: 12px;
+          box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+        }
         
         .menu-item {
           display: flex;
@@ -226,6 +212,6 @@ export const RenderBattle = (props: {setActive: any, activeComponent: any, battl
         }
       `}
       </style>
-    </BattleProvider>
+    </>
   )
 }

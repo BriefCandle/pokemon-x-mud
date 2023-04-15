@@ -38,8 +38,6 @@ export const PokemonMoves = (props:any) => {
           <div>Move ID: {moveIDs[index]}</div>
           <div>Move Index: {moveIndexes[index]}</div>
           <div>Move Info: {DisplayStruct(moveInfo[index])}</div>
-          {/* <DisplayStruct struct={moveInfo[index]} /> */}
-          {/* <DisplayStruct struct={moveEffect[index]} /> */}
           <div>Move Effect: {DisplayStruct(moveEffect[index])}</div>
           <br />
         </div>

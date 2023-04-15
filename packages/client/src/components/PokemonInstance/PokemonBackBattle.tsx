@@ -5,7 +5,7 @@ export const PokemonBackBattle = (prop: {basicInfo: PokemonBasicInfo | undefined
   const {basicInfo, selected} = prop;
   if (basicInfo === undefined) return null;
 
-  const { level, hp, classIndex } = basicInfo;
+  const { level, hp, classIndex, maxHP } = basicInfo;
 
 
   return (
@@ -20,10 +20,10 @@ export const PokemonBackBattle = (prop: {basicInfo: PokemonBasicInfo | undefined
       </div>
       <div className="pokemon-hp-info">
         <div className="pokemon-health-bar">
-          <div className="pokemon-health-bar-inner" style={{ width: `${(hp / 100) * 100}%` }}></div>
+          <div className="pokemon-health-bar-inner" style={{ width: `${(hp / maxHP) * 100}%` }}></div>
         </div>
         <div className="pokemon-hp">
-          HP: {hp}/{100}
+          HP: {hp}/{maxHP}
         </div>
 
       </div>

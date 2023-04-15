@@ -84,7 +84,7 @@ library LibMove {
   function checkCritical(uint16 SPD, int8 CRT, uint256 randomNumber) internal pure returns (bool) {
     uint32 multiplier = LibPokemon.getStatsMultipled(CRT, 1);
     uint256 threshold = randomNumber % 256;
-    return multiplier * SPD / 3 > threshold ? true : false;
+    return multiplier * SPD / 2 > threshold ? true : false;
   }
 
   function getMoveEffect(IUint256Component components, uint256 moveID) internal view returns (MoveEffect memory) {

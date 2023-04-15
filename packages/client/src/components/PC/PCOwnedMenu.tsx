@@ -2,6 +2,7 @@ import { ActiveComponent } from "../../useActiveComponent";
 import { useCallback, useEffect, useState } from "react";
 import { useKeyboardMovement } from "../../useKeyboardMovement";
 import { EntityIndex } from "@latticexyz/recs";
+import { useMapContext } from "../../mud/utils/MapContext";
 
 const PCTeamMenuItems = [
   { name: "Detail", value: "detail"},
@@ -9,9 +10,9 @@ const PCTeamMenuItems = [
   { name: "Back", value: "back"}
 ]
 
-export const PCOwnedMenu = (props: {setActive: any, activeComponent: any}) => {
-  const {setActive, activeComponent} = props;
-
+export const PCOwnedMenu = () => {
+  const {setActive, activeComponent} = useMapContext();
+  console.log("pc owned menu")
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
 
   const press_up = () => {

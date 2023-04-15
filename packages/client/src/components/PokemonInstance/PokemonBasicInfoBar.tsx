@@ -8,7 +8,7 @@ export const PokemonBasicInfoBar = (prop: {basicInfo: PokemonBasicInfo | undefin
   const basicInfo = prop.basicInfo;
   if (basicInfo === undefined) return null;
 
-  const { level, hp, classIndex } = basicInfo;
+  const { level, hp, classIndex, maxHP } = basicInfo;
 
 
   return (
@@ -18,15 +18,15 @@ export const PokemonBasicInfoBar = (prop: {basicInfo: PokemonBasicInfo | undefin
         <LoadPokemonImage classIndex={classIndex} imageType={PokemonImageType.icon}/>
       </div>
       <div className="pokemon-info">
-        <div className="pokemon-name">Pokemon {classIndex}</div>
+        <div className="pokemon-name">Index {classIndex}</div>
         <div className="pokemon-level">Level: {level}</div>
       </div>
       <div className="pokemon-hp-info">
         <div className="pokemon-health-bar">
-          <div className="pokemon-health-bar-inner" style={{ width: `${(hp / 100) * 100}%` }}></div>
+          <div className="pokemon-health-bar-inner" style={{ width: `${(hp / maxHP) * 100}%` }}></div>
         </div>
         <div className="pokemon-hp">
-          HP: {hp}/{100}
+          HP: {hp}/{maxHP}
         </div>
 
       </div>
@@ -57,6 +57,7 @@ export const PokemonBasicInfoBar = (prop: {basicInfo: PokemonBasicInfo | undefin
       }
       
       .pokemon-hp-info {
+        flex-grow: 0.5;
         display: flex;
         flex-direction: column;
         align-items: flex-end;
@@ -67,7 +68,8 @@ export const PokemonBasicInfoBar = (prop: {basicInfo: PokemonBasicInfo | undefin
       }
       
       .pokemon-health-bar {
-        width: 150px;
+        max-width: 150px;
+        width: 100%;
         height: 12px;
         background-color: #e0e0e0;
         border-radius: 6px;

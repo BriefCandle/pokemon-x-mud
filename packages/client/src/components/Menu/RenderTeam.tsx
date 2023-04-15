@@ -1,7 +1,7 @@
 import { ActiveComponent } from "../../useActiveComponent";
 import { useMUD } from "../../mud/MUDContext";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useObservableValue } from "@latticexyz/react";
+import { useComponentValue, useObservableValue } from "@latticexyz/react";
 import { getComponentEntities, getEntitiesWithValue, getComponentValueStrict, getComponentValue, Has, ComponentValue, Type, EntityID, EntityIndex } from "@latticexyz/recs";
 import { useKeyboardMovement } from "../../useKeyboardMovement";
 import { TeamPokemonMenu } from "./TeamPokemonMenu";
@@ -10,32 +10,34 @@ import { PokemonBasicInfo, getTeamPokemonInfo } from "../../mud/utils/pokemonIns
 import { LoadPokemonImage, PokemonImageType } from "../PokemonInstance/loadPokemonImage";
 import { TeamSwitch } from "./TeamSwitch";
 import { PokemonBasicInfoBar } from "../PokemonInstance/PokemonBasicInfoBar";
+import { useMapContext } from "../../mud/utils/MapContext";
 
-export const RenderTeam = (props: {setActive: any, activeComponent: any}) => { 
-  const {setActive, activeComponent} = props;
+export const RenderTeam = () => { 
+  // const {setActive, activeComponent, playerIndex} = props;
+  const { activeComponent, setActive, interactCoord, setInteractCoord, thatPlayerIndex, setThatPlayerIndex} = useMapContext();
+
   const {
     components: { Team, TeamPokemons },
     world,
     playerEntityId,
   } = useMUD();
 
-  const teamIndexes = getEntitiesWithValue(Team, {value: playerEntityId} as ComponentValue<{value: any}>)?.values();
+  const playerID = world.entities[thatPlayerIndex];
+  const teamIndexes = getEntitiesWithValue(Team, {value: playerID} as ComponentValue<{value: any}>)?.values();
   const teamIndex = teamIndexes.next().value;
-  const pokemonIDs = getComponentValue(TeamPokemons, teamIndex)?.value as string[]; //Type.NumberArray
-  useObservableValue(TeamPokemons.update$);
+  
+  const player_teamIndexes = getEntitiesWithValue(Team, {value: playerEntityId} as ComponentValue<{value: any}>)?.values();
+  const player_teamIndex = player_teamIndexes.next().value;
+  const isPlayerTeam = player_teamIndex === teamIndex ? true : false;
+
+  const pokemonIDs = useComponentValue(TeamPokemons, teamIndex)?.value as string[]; //Type.NumberArray
+  // useObservableValue(TeamPokemons.update$);
 
   const pokemonInfo: (PokemonBasicInfo | undefined) [] = pokemonIDs?.map((pokemonEntity) => {
     const pokemonIndex = world.entityToIndex.get((pokemonEntity as EntityID))
     if (pokemonIndex !== undefined) return getTeamPokemonInfo(pokemonIndex)
     else return undefined;
   })
-
-  // Array.from(teamIDs).map((teamID) => {
-  //   const test = getComponentValue(Team, teamID)
-  //   const test2 = getEntitiesWithValue(Team, test as ComponentValue<any>)
-  //   // console.log("test2 is", test2)
-  // })
-
   
   // ----- key input functions -----
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
@@ -52,14 +54,14 @@ export const RenderTeam = (props: {setActive: any, activeComponent: any}) => {
   const press_a = useCallback(() => {
     const item = pokemonIDs[selectedItemIndex];
     if (item == "0x00") return null;
-    return setActive(ActiveComponent.teamPokemonMenu);
+    return isPlayerTeam ? setActive(ActiveComponent.teamPokemonMenu) : setActive(ActiveComponent.teamPokemon);
   }, [selectedItemIndex]);
 
-  const press_b = () => { setActive(ActiveComponent.menu);}
+  const press_b = () => { setActive(ActiveComponent.map);}
 
   const press_left = () => { return; };
   const press_right = () => { return; };
-  const press_start = () => { setActive(ActiveComponent.map);};
+  const press_start = () => { isPlayerTeam ? setActive(ActiveComponent.menu): setActive(ActiveComponent.map);};
 
   useKeyboardMovement(activeComponent == ActiveComponent.team, 
     press_up, press_down, press_left, press_right, press_a, press_b, press_start)

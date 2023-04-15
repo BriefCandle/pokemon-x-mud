@@ -12,7 +12,7 @@ contract GiftPokemonScript is PokemonScript {
 
   uint32 index = 1;
   uint32 level = 7;
-  address player = 0x2c16204730C0d2f19931FE1c8c58ff32F36B5196;
+  address player = 0x4610dCCd9bcC56F5a0141ac3E65D3c059d5A777f; // 0x2c16204730C0d2f19931FE1c8c58ff32F36B5196; //0xB7Dc9A3f54720004FE97302FC88Cf14B77749B9d; //0x1B21073AC9c74b17D3A7d018F16DbFCd51C8fAb4; 
 
   function run() public {
     // uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");

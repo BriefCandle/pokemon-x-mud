@@ -5,7 +5,8 @@ import { EntityID, EntityIndex, getComponentValue, getComponentValueStrict } fro
 import { ActiveComponent } from "../../useActiveComponent";
 import { useKeyboardMovement } from "../../useKeyboardMovement";
 import { BattleActionType } from "../../enum/battleActionType";
-import { TimeLeftAction } from "./TimeLeftAction";
+import { useBattleContext } from "../../mud/utils/BattleContext";
+import { pokemonIndexToMoveNames, getMoves } from "../../mud/utils/pokemonInstance";
 
 const actionMenuItems = [
   {name: "Move0", value: BattleActionType.Move0},
@@ -17,28 +18,29 @@ const actionMenuItems = [
   {name: "Escape", value: BattleActionType.Escape}
 ]
 
-export const BattlePlayerAction = (
-  props: {setActive: any, activeComponent: any
-          setSelectedAction: React.Dispatch<React.SetStateAction<BattleActionType>>, selectedAction: BattleActionType
-          pokemonID: EntityID, battleID: EntityID}) => {
-  const {setActive, activeComponent, setSelectedAction, selectedAction, pokemonID, battleID} = props;
+export const BattlePlayerAction = () => {
 
   const {
     world,
     api: { battle },
     components: { PokemonMoves, MoveName },
   } = useMUD();
+
+  const {battleID, player_turn_pokemon, next_pokemonID, commit, activeComponent, selectedAction, setSelectedAction, setActive, setSelectedTarget, setMessage} = useBattleContext();
   
-  const pokemonIndex = world.entityToIndex.get(pokemonID)!
+  // setActive(ActiveComponent.battlePlayerAction)
+  const pokemonIndex = world.entityToIndex.get(next_pokemonID)
   const pokemonMoves_ID = getComponentValueStrict(PokemonMoves, pokemonIndex)?.value as EntityID[];
   const pokemonMoves_index: (EntityIndex | undefined) [] = pokemonMoves_ID.map((moveID)=> {
-    // const entityID =BigNumber.from(moveID).toString()
     return world.entityToIndex.get(moveID)
   })
-  const pokemonMoves_name: (string | undefined) [] = pokemonMoves_index.map((moveIndex)=> {
-    if (moveIndex) return getComponentValueStrict(MoveName, moveIndex).value;
-    else return undefined;
-  })
+  // const pokemonMoves_name: (string | undefined) [] = pokemonMoves_index.map((moveIndex)=> {
+  //   if (moveIndex) return getComponentValueStrict(MoveName, moveIndex).value;
+  //   else return undefined;
+  // })
+
+  const moveNames = pokemonIndexToMoveNames(world.getEntityIndexStrict(next_pokemonID))
+  console.log("player move names: ", moveNames)
 
   // ----- key input functions -----
   const [selectedItemIndex, setSelectedItemIndex] = useState(0); // redundant but keep the pattern
@@ -53,21 +55,19 @@ export const BattlePlayerAction = (
     selectedItemIndex === actionMenuItems.length -1 ? selectedItemIndex : selectedItemIndex+1)
   },[])
 
-  const press_a = useCallback(() => {
+  const press_a = useCallback(async () => {
     const item = actionMenuItems[selectedItemIndex];
       if (item.value === BattleActionType.Move0 || item.value === BattleActionType.Move1 || 
           item.value === BattleActionType.Move2 || item.value === BattleActionType.Move3 || 
           item.value === BattleActionType.UsePokeball ||  item.value === BattleActionType.Escape) {
-        console.log("to target")
         setSelectedAction(item.value);
-        setActive(ActiveComponent.battlePlayerTarget);
+        // setActive(ActiveComponent.battlePlayerTarget);
+        setSelectedTarget(0)
       }
       else if (item.value === BattleActionType.Skip) {
-        battle(battleID, "0x00", BattleActionType.Skip)
-        console.log("executeTyped")
+        await battle(battleID, "0x00", BattleActionType.Skip)
       }
       else return
-    // return setActive(ActiveComponent.pcOwned);
   }, [selectedItemIndex]);
 
   const press_b = () => { return;}
@@ -75,22 +75,19 @@ export const BattlePlayerAction = (
   const press_down = () => { return; };
   const press_start = () => { return; };
 
-  useKeyboardMovement(activeComponent == ActiveComponent.battlePlayerAction, 
+  useKeyboardMovement(true, 
     press_up, press_down, press_left, press_right, press_a, press_b, press_start)
 
 
   return (
     <>
-      <div>
-        <TimeLeftAction battleID={battleID}/>
-      </div>
       <div className="battle-player-action">
         { actionMenuItems.map((item, index) => (
           <div
             key={item.value}
             className={`action-item ${index === selectedItemIndex ? "selected" : ""}`}
           >
-            {item.name}
+            {moveNames[index] ? moveNames[index] : item.name}
           </div>)
         )}
       </div>
@@ -104,6 +101,7 @@ export const BattlePlayerAction = (
             color: black;
             height: 100px;
             font-size: 12px;
+            width: 100%;
           }
 
           .action-item {

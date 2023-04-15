@@ -1,17 +1,17 @@
 import { ActiveComponent } from "../../useActiveComponent";
 import { useMUD } from "../../mud/MUDContext";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useObservableValue } from "@latticexyz/react";
+import { useObservableValue, useComponentValue } from "@latticexyz/react";
 import { getComponentEntities, getEntitiesWithValue, getComponentValueStrict, getComponentValue, Has, ComponentValue, Type, EntityID, EntityIndex } from "@latticexyz/recs";
 import { useKeyboardMovement } from "../../useKeyboardMovement";
 import { PokemonBasicInfo, getTeamPokemonInfo } from "../../mud/utils/pokemonInstance";
 import { LoadPokemonImage, PokemonImageType } from "../PokemonInstance/loadPokemonImage";
 import { PokemonBasicInfoBar } from "../PokemonInstance/PokemonBasicInfoBar";
 import { PCTeamMenu } from "./PCTeamMenu";
+import { useMapContext } from "../../mud/utils/MapContext";
 
-export const PCTeam = (props: {setActive: any, activeComponent: any, pc_coord:{x:number,y:number}}) => { 
-  console.log("pcTeam")
-  const {setActive, activeComponent, pc_coord} = props;
+export const PCTeam = () => { 
+  const {setActive, activeComponent} = useMapContext();
   const {
     components: { Team, TeamPokemons },
     world,
@@ -20,17 +20,15 @@ export const PCTeam = (props: {setActive: any, activeComponent: any, pc_coord:{x
 
   const teamIndexes = getEntitiesWithValue(Team, {value: playerEntityId} as ComponentValue<{value: any}>)?.values();
   const teamIndex = teamIndexes.next().value;
-  const pokemonIDs = getComponentValue(TeamPokemons, teamIndex)?.value as string[]; //Type.NumberArray
+  const pokemonIDs = useComponentValue(TeamPokemons, teamIndex)?.value as string[]; //Type.NumberArray
   
-  useObservableValue(TeamPokemons.update$);
+  // useObservableValue(TeamPokemons.update$);
 
   const pokemonInfo: (PokemonBasicInfo | undefined) [] = pokemonIDs?.map((pokemonEntity) => {
     const pokemonIndex = world.entityToIndex.get((pokemonEntity as EntityID))
     if (pokemonIndex !== undefined) return getTeamPokemonInfo(pokemonIndex)
     else return undefined;
   })
-
-  console.log("pcteam", pokemonIDs)
   
   // ----- key input functions -----
   const [selectedItemIndex, setSelectedItemIndex] = useState(-1); // because RenderMap set to pcOwned initially
@@ -80,8 +78,7 @@ export const PCTeam = (props: {setActive: any, activeComponent: any, pc_coord:{x
     <>
       <div className="pc-team">
         { activeComponent == ActiveComponent.pcTeamMenu ?
-        <PCTeamMenu setActive={setActive} activeComponent={activeComponent} 
-        pokemonIDs={pokemonIDs} index={selectedItemIndex} pc_coord={pc_coord}/> : null}
+        <PCTeamMenu pokemonIDs={pokemonIDs} index={selectedItemIndex}/> : null}
 
         <h1 style={{color: "black"}}>Currnet Team</h1>
         {pokemonInfo.map((info, index) => (
@@ -93,8 +90,6 @@ export const PCTeam = (props: {setActive: any, activeComponent: any, pc_coord:{x
           </div>
         ))}
 
-        {/* <button className={`menu-item ${selectedItemIndex === pokemonIDs.length ? "selected" : ""}`}
-        >Save Team</button> */}
       </div>
 
       <style>

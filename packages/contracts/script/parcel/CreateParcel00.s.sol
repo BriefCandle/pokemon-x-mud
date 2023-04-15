@@ -25,7 +25,7 @@ contract CreateParcel00Script is CreateParcelScript {
       [S, G, G, G, G],
       [S, G, PC, G, G],
       [S, G, G, G, G],
-      [S, G, G, G, G]
+      [S, G, G, G, LC]
     ];
 
     bytes memory terrain = convertTerrainArrayToBytes(map);

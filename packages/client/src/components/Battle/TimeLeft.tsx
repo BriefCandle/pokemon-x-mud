@@ -17,8 +17,8 @@ export const TimeLeft = (props: {startTimestamp: number, max_duration: number}) 
   const remainingPerimeter = perimeter * (1 - progress);
 
   return (
-    <svg width="100" height="100" style={{ position: "absolute", top: 10, left: 10 }}>
-      <circle cx={cx} cy={cy} r={r} stroke="#ccc" strokeWidth="2" fill="none" />
+    <svg width="100" height="100" style={{ position: "absolute", top: 10, left: 10, zIndex: 50}}>
+      <circle cx={cx} cy={cy} r={r} stroke="#ccc" strokeWidth="2" fill="white" />
       <circle cx={cx} cy={cy} r={r} stroke="green" strokeWidth="3" strokeDasharray={`${remainingPerimeter} ${perimeter}`} transform={`rotate(-90 ${cx} ${cy})`} fill="none" />
       <text x={cx} y={cy} textAnchor="middle" alignmentBaseline="middle" fontSize="10">{Math.round(remainingSeconds)}</text>
     </svg>

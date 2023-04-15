@@ -105,7 +105,11 @@
     { "name": "RespawnSystem",
     "writeAccess": [
     "PositionComponent"
-  ]},
+    ]},
+    { "name": "LogoutSystem",
+    "writeAccess": [
+    "PositionComponent"
+    ]},
     { "name": "ObtainFirstPokemonSystem",
       "writeAccess": [
         "OwnedByComponent",
