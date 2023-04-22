@@ -1,3 +1,5 @@
+make sure you switch to pokemona branch
+
 # Roguelike X MUD
 
 # Overview
